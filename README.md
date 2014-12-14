@@ -1,1 +1,1 @@
-Jekyll powered contents of Github page.
+Jekyll powered Github page.

@@ -268,8 +268,10 @@ nav ul li:hover, nav ul li.active {
 	margin-bottom:10px;
 }
 .sectiondivider-big img {
-	width: 256px;
-	margin-top: 0px;
+	width: auto !important;
+	width: 100%;
+	max-width: 100%;
+	margin: 0px;
 }
 .sectiondivider .text-blue {margin-left:5px !important;}
 /* for top image */
