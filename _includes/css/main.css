@@ -271,13 +271,12 @@ nav ul li:hover, nav ul li.active {
 	width: auto !important;
 	width: 100%;
 	max-width: 100%;
-	margin: 0px;
+	margin-top: 0px;
 }
 .sectiondivider .text-blue {margin-left:5px !important;}
 /* for top image */
 @media only screen and (max-width:959px) {
-	.sectiondivider-big {margin-right:0px;height:275px;width:275px;}
-	.sectiondivider-big > img {margin-top:-35px;}
+	/* for small screens, may be later */
 }
 /* mid size (tablets, landscapes) */
 @media only screen and (max-width: 679px) {
