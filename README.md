@@ -1,1 +1,0 @@
-Jekyll powered Github page.
