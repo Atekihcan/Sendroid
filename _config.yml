@@ -15,9 +15,9 @@ highlighter: pygments
 
 
 ### content configuration ###
-title:       "Atekihcan"
-keywords:    "nachiketa, nachiketa das, atekihcan, sheyar, github, blog"
-description: "It all started with big bang!"
+title:       "Sheyar"
+keywords:    "sheyar, share, android, firefox, nachiketa, nachiketa das, atekihcan, github"
+description: "Easily share text or link from browser to android device"
 source_link: ""
 favicon:     "img/favicon.png"
 touch_icon:  "img/apple-touch-icon.png"
