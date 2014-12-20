@@ -16,8 +16,8 @@ highlighter: pygments
 
 ### content configuration ###
 title:       "Atekihcan"
-keywords:    "nachiketa, nachiketa das, atekihcan, sendroid, github, blog"
-description: "It all started with big bang!"
+keywords:    "sendroid, android, firefox, chrome, share, nachiketa, nachiketa das, atekihcan, sendroid, github, blog"
+description: "Easily share text or link from browser to android device"
 source_link: ""
 favicon:     "img/favicon.png"
 touch_icon:  "img/apple-touch-icon.png"
