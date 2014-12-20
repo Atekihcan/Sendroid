@@ -15,9 +15,9 @@ highlighter: pygments
 
 
 ### content configuration ###
-title:       "Sheyar"
-keywords:    "sheyar, share, android, firefox, nachiketa, nachiketa das, atekihcan, github"
-description: "Easily share text or link from browser to android device"
+title:       "Atekihcan"
+keywords:    "nachiketa, nachiketa das, atekihcan, sendroid, github, blog"
+description: "It all started with big bang!"
 source_link: ""
 favicon:     "img/favicon.png"
 touch_icon:  "img/apple-touch-icon.png"
@@ -26,15 +26,18 @@ google_analytics_key: UA-57470252-1
 
 ### template colors, used site-wide via css ###
 colors:
-  black:		'#111111'
-  white:		'#f8f8f8'
+  black:    		'#111111'
+  white:	    	'#f8f8f8'
   andro-blue:		'#0099cc'
-  andro-blue-light:	'#33b5e5'
+  andro-blue-li:	'#33b5e5'
   andro-violet:		'#9933cc'
-  andro-violet-light:	'#aa66cc'
+  andro-violet-li:	'#aa66cc'
   andro-green:		'#669900'
-  andro-green-light:	'#99cc00'
+  andro-green-li:	'#99cc00'
   andro-yellow:		'#ff8800'
-  andro-yellow-light:	'#ffbb33'
+  andro-yellow-li:	'#ffbb33'
   andro-red:		'#cc0000'
-  andro-red-light:	'#ff4444'
+  andro-red-li: 	'#ff4444'
+  sendroid:         '#27bec4'
+  sendroid-li:      '#ccfeff'
+  sendroid-da:      '#00888C'
