@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2014. Atekihcan <com.atekihcan@gmail.com>
+  ~
+  ~ Author	: Atekihcan
+  ~ Website	: http://atekihcan.github.io
+  -->
+
+<resources>
+    <string-array name="listDefaultShare">
+        <item>Facebook</item>
+        <item>Facebook Messenger</item>
+        <item>Hangout</item>
+        <item>Hike</item>
+        <item>Whatsapp</item>
+        <item>Not Set</item>
+    </string-array>
+    <string-array name="listDefaultShareValues">
+        <item>com.facebook.katana</item>
+        <item>com.facebook.orca</item>
+        <item>com.google.android.talk</item>
+        <item>com.bsb.hike</item>
+        <item>com.whatsapp</item>
+        <item>Not Set</item>
+    </string-array>
+</resources>

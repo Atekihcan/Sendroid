@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2014. Atekihcan <com.atekihcan@gmail.com>
+  ~
+  ~ Author	: Atekihcan
+  ~ Website	: http://atekihcan.github.io
+  -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:key="@string/prefs_copy_key"
+        android:title="@string/prefs_copy_title"
+        android:defaultValue="false" />
+
+    <ListPreference
+        android:key="@string/prefs_share_key"
+        android:title="@string/prefs_share_title"
+        android:dialogTitle="@string/prefs_share_dialog"
+        android:summary="%s"
+        android:entries="@array/listDefaultShare"
+        android:entryValues="@array/listDefaultShareValues"
+        android:defaultValue="@string/prefs_package_default" />
+
+    <ListPreference
+        android:key="@string/prefs_image_key"
+        android:title="@string/prefs_image_title"
+        android:dialogTitle="@string/prefs_image_dialog"
+        android:summary="%s"
+        android:entries="@array/listDefaultShare"
+        android:entryValues="@array/listDefaultShareValues"
+        android:defaultValue="@string/prefs_package_default" />
+
+</PreferenceScreen>
