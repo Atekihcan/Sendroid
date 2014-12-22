@@ -1,0 +1,108 @@
+body {
+	width: 250px;
+	height: 350px;
+	font-size: 100%;
+	margin: 0px;
+	text-align: center;
+	font-family: "Roboto", "Nimbus Sans L", "URW Gothic L", Verdana, Tahoma, Helvetica, "Lucida Grande", Geneva, "DejaVu Sans", "Microsoft Sans Serif", sans-serif;
+	background-color: rgb(204, 254, 255);
+}
+
+.header {
+	height: 50px;
+	margin: 0px auto;
+	padding: 5px 10px;
+	background-color: rgb(0, 136, 140);
+	color: rgb(204, 254, 255);
+	font-size: 2em;
+	text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+}
+
+.content {
+	margin: 0px auto;
+	padding: 10px 0px;
+}
+
+.table {
+	width: 240px;
+	margin: 0px auto;
+	text-align: left;
+	border-collapse: collapse;
+}
+
+.row_cards {
+	border: 5px solid rgba(0, 0, 0, 0);
+	background-color: rgb(180, 254, 255);
+	box-shadow: 0px 4px 3px grey;
+}
+
+.table td {
+	padding: 5px 1px;
+	vertical-align: middle;
+}
+
+.device_status {
+	width: 16px;
+	height: 16px;
+	padding: 5px 0px 0px 5px;
+}
+
+.device_footer {
+	font-size: 0.8em;
+	padding-top: 10px;
+}
+
+.device_footer p {
+	margin: 0px;
+}
+
+.button {
+	cursor: pointer;
+	background-color: rgba(0, 0, 0, 0);
+    background-repeat: no-repeat;
+	background-size: contain;
+}
+
+.big {
+    width: 48px;
+    height: 48px;
+	border-radius: 24px;
+}
+
+.small {
+    width: 24px;
+    height: 24px;
+	border-radius: 12px;
+}
+
+.edit {
+    background-image: url(assets/ic_edit.png);
+}
+
+.delete {
+        background-image: url(assets/ic_delete.png);
+}
+
+.add {
+    background-image: url(assets/ic_add.png);
+}
+
+.cancel {
+    background-image: url(assets/ic_cancel.png);
+}
+
+.save {
+    background-image: url(assets/ic_save.png);
+}
+
+.textarea {
+	width: 230px;
+	resize: none;
+	transition: all 0.25s ease-in-out;
+	box-shadow: 0 0 5px rgba(0, 136, 140, 0);
+}
+
+.textarea:focus {
+	outline:none;
+	box-shadow: 0 0 5px rgba(0, 136, 140, 1);
+}

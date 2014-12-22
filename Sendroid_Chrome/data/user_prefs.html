@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<link href="style.css" type="text/css" rel="stylesheet">
+		<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+	</head>
+	<body>
+		<div class="header">
+			<div style="display: table; float: left">
+				<img src="assets/logo.png" alt="Sendroid" style="width: 40px; vertical-align:middle;"/>
+                <span style="width: 40px; vertical-align:middle;">Sendroid</span>
+			</div>
+		</div>
+		<div class="content">
+			<table id="device_list" class="table" style="display:none;">
+				<tr id="device_0" class="row_cards">
+					<td><img class="device_status" /></td>
+					<td style="width: 250px;">&nbsp;</td>
+					<td><button id="edit_device_0" class="button small edit" title="Edit"></button></td>
+					<td><button id="delete_device_0" class="button small delete" title="Delete"></button></td>
+				</tr>
+				<tr id="device_1" class="row_cards">
+					<td><img class="device_status" /></td>
+					<td style="width: 250px;">&nbsp;</td>
+					<td><button id="edit_device_1" class="button small edit" title="Edit"></button></td>
+					<td><button id="delete_device_1" class="button small delete" title="Delete"></button></td>
+				</tr>
+				<tr id="device_2" class="row_cards">
+					<td><img class="device_status" /></td>
+					<td style="width: 250px;">&nbsp;</td>
+					<td><button id="edit_device_2" class="button small edit" title="Edit"></button></td>
+					<td><button id="delete_device_2" class="button small delete" title="Delete"></button></td>
+				</tr>
+				<tr id="device_3" class="row_cards">
+					<td><img class="device_status" /></td>
+					<td style="width: 250px;">&nbsp;</td>
+					<td><button id="edit_device_3" class="button small edit" title="Edit"></button></td>
+					<td><button id="delete_device_3" class="button small delete" title="Delete"></button></td>
+				</tr>
+			</table>
+			<div id="no_device" class="device_footer">
+				<p>
+					No android device found.
+				</p>
+				<p>
+					Sendroid needs at least one device to work.
+				</p>
+			</div>
+			<div id="add_device" style="width: 100px; margin: auto; padding: 10px;">
+				<button class="button big add" title="Add New Device"></button>
+			</div>
+		</div>
+	</body>
+</html>
