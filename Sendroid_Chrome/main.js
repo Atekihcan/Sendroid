@@ -4,7 +4,6 @@ var APP_ICON_32 = "data/assets/logo_32.png";
 var APP_ICON_36 = "data/assets/logo_36.png";
 var APP_ICON_64 = "data/assets/logo_64.png";
 var GCM_API_KEY = "GCM_API_KEY";
-var REG_ID 	= "GCM_CLIENT_REGISTRATION_ID"
 
 /* checking storage */
 var devices = chrome.storage.local.get("sendroidDB", function() {
@@ -22,6 +21,41 @@ if (!devices) {
 /****************************************************************************/
 /*					Creating UI for user preferences						*/
 /****************************************************************************/
+
+chrome.runtime.onMessage.addListener(
+	function(request, sender, sendResponse) {
+	if (request.type == "delete") {
+		chrome.storage.local.get("sendroidDB", function(result) {
+			console.log("Accessing Storage for deleting device_" + request.id);
+			result.sendroidDB.splice(request.id, 1);
+			chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
+				console.log("Saving Storage after deleting");
+				updateContextMenu();
+			});
+		});
+	} else if (request.type == "add") {
+		chrome.storage.local.get("sendroidDB", function(result) {
+			console.log("Accessing Storage for adding new device");
+			result.sendroidDB.push(request.device);
+			chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
+				console.log("Saving Storage after Adding");
+				updateContextMenu();
+			});
+		});
+	} else if (request.type == "edit") {		
+		chrome.storage.local.get("sendroidDB", function(result) {
+			console.log("Accessing Storage for editing device_" + request.id);
+			result.sendroidDB[request.id].name = request.device.name;
+			result.sendroidDB[request.id].regid = request.device.regid;
+			result.sendroidDB[request.id].status = request.device.status;
+			chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
+				console.log("Saving Storage after Editing");
+				updateContextMenu();
+			});
+		});
+	}
+	sendResponse({ type: "show" });
+});
 
 /**********   notification constructor for error notifications	**********/
 function sheyarNotify(error, body, showUserPref) {
@@ -41,12 +75,28 @@ function sheyarNotify(error, body, showUserPref) {
 /****************************************************************************/
 /* create context menu tree at install time */
 chrome.runtime.onInstalled.addListener(function() {
-	chrome.contextMenus.create({
-		"title": "Send to android",
-		"id": "top",
-		"contexts":["image", "link", "selection", "page"]
-	});
+	updateContextMenu();
 });
+
+function updateContextMenu () {
+	chrome.contextMenus.removeAll();
+	chrome.contextMenus.create({
+		"title":	"Send to android",
+		"id":		"top",
+		"contexts":	["image", "link", "selection", "page"]
+	});
+
+	chrome.storage.local.get("sendroidDB", function(result) {
+		console.log("Creating context menu item list.");
+		for (var i = 0; i < result.sendroidDB.length; i++) {
+			chrome.contextMenus.create({
+				"title":	result.sendroidDB[i].name,
+				"id":		i.toString(),
+				"parentId":	"top"
+			});
+		};
+	});
+}
 
 /* onClick listener for context menu */
 chrome.contextMenus.onClicked.addListener(checkContext);
@@ -78,11 +128,11 @@ function checkContext(info, tab) {
 	
 	console.log("type : " + sheyarData.type + " (" + sheyarData.id + ")");
 	console.log("body : " + sheyarData.body);
-	createAndSendMessage();
+	createAndSendMessage(info.menuItemId);
 };
 
 /* handle context menu click */
-function createAndSendMessage() {	
+function createAndSendMessage(toDevice) {	
 	/* restrict message body length to 2048 characters */
 	if (sheyarData.body.length > 2048) {
 		console.log("You can't send more than 2048 characters");
@@ -91,23 +141,25 @@ function createAndSendMessage() {
 		
 	/* if everything is okay proceed with message creation */
 	console.log(sheyarData.type + " : " + sheyarData.body.substring(0, 64));
-	
-	var sheyarMessage = JSON.stringify({
-		time_to_live: 60,			/* message life in GCM server | 1 minute */
-		delay_while_idle: false,	/* T = wait | F = deliver immediately */
-		data: {
-			id: sheyarData.id,
-			type: sheyarData.type,
-			body: sheyarData.body
-		},
-		registration_ids: [REG_ID]
-	});
 
-	sendMessage(sheyarMessage); 
+	chrome.storage.local.get("sendroidDB", function(result) {
+			var sheyarMessage = JSON.stringify({
+			time_to_live: 60,			/* message life in GCM server */
+			delay_while_idle: false,	/* T = wait | F = deliver immediately */
+			data: {
+				id: sheyarData.id,
+				type: sheyarData.type,
+				body: sheyarData.body
+			},
+			registration_ids: [result.sendroidDB[toDevice].regid]
+		});
+
+		sendMessage(sheyarMessage, toDevice);
+	});
 }
 
 /* send the message to GCM server using http POST */
-function sendMessage(message) {
+function sendMessage(message, toDevice) {
 	var sendRequest = new XMLHttpRequest();
     sendRequest.open('POST', 'https://android.googleapis.com/gcm/send', true);
 	sendRequest.setRequestHeader('Content-type', 'application/json');

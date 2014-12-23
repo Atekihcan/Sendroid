@@ -61,6 +61,11 @@ editButton[3].addEventListener('click', function() { onEdit(3) }, false);
 /* handle delete button clicks */
 function onDelete(deviceID) {
 	console.log("Deleting device_" + deviceID);
+	chrome.runtime.sendMessage({type: "delete", id: deviceID}, function(response) {
+		if (response.type == "show") {
+			showUserPrefs();
+		}
+	});
 }
 deleteButton[0].addEventListener('click', function() { onDelete(0) }, false);
 deleteButton[1].addEventListener('click', function() { onDelete(1) }, false);
@@ -142,27 +147,20 @@ saveButton.addEventListener('click', function onClick() {
 		console.log(updateDevice + " and " + updateID);
 		/* for update event, update storage */
 		if (updateDevice) {
-			chrome.storage.local.get("sendroidDB", function(result) {
-				console.log("Accessing Storage for editing device_" + updateID);
-				result.sendroidDB[updateID].name = newDevice.name;
-				result.sendroidDB[updateID].regid = newDevice.regid;
-				result.sendroidDB[updateID].status = newDevice.status;
-				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
-					console.log("Saving Storage after Editing");
-				});
+			chrome.runtime.sendMessage({type: "edit", id: updateID, device: newDevice}, function(response) {
+				if (response.type == "show") {
+					showUserPrefs();
+				}
 			});
 
 		/* for add event, add new device to storage */
 		} else {
-			chrome.storage.local.get("sendroidDB", function(result) {
-				console.log("Accessing Storage for adding new device");
-				result.sendroidDB.push(newDevice);
-				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
-					console.log("Saving Storage after Adding");
-				});
+			chrome.runtime.sendMessage({type: "add", device: newDevice}, function(response) {
+				if (response.type == "show") {
+					showUserPrefs();
+				}
 			});
 		}
-		showUserPrefs();
 	/* if inputs are empty, mark input boxes in red */
 	} else {
 		if (newDevice.name) {
