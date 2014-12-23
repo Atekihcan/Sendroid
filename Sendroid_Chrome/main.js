@@ -6,6 +6,19 @@ var APP_ICON_64 = "data/assets/logo_64.png";
 var GCM_API_KEY = "GCM_API_KEY";
 var REG_ID 	= "GCM_CLIENT_REGISTRATION_ID"
 
+/* checking storage */
+var devices = chrome.storage.local.get("sendroidDB", function() {
+	console.log("Accessing Storage");
+});
+
+if (!devices) {
+	devices = [];
+	
+	chrome.storage.local.set({ "sendroidDB": devices }, function() {
+		console.log("Saving Storage");
+	});
+}
+
 /****************************************************************************/
 /*					Creating UI for user preferences						*/
 /****************************************************************************/

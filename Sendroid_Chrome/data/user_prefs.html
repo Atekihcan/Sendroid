@@ -7,11 +7,11 @@
 	<body>
 		<div class="header">
 			<div style="display: table; float: left">
-				<img src="assets/logo.png" alt="Sendroid" style="width: 40px; vertical-align:middle;"/>
-                <span style="width: 40px; vertical-align:middle;">Sendroid</span>
+				<img src="assets/logo_256.png" alt="Sendroid" style="width: 40px; vertical-align:middle;"/>
+                		<span style="width: 40px; vertical-align:middle;">Sendroid</span>
 			</div>
 		</div>
-		<div class="content">
+		<div id="user_prefs_div" class="content">
 			<table id="device_list" class="table" style="display:none;">
 				<tr id="device_0" class="row_cards">
 					<td><img class="device_status" /></td>
@@ -50,5 +50,21 @@
 				<button class="button big add" title="Add New Device"></button>
 			</div>
 		</div>
+		
+		<div id="add_device_div" class="content" style="display:none;">
+			<table style="margin: auto;">
+				<tr>
+					<td><textarea id="name" rows="1" cols="25" placeholder="A name for your device..." class="textarea" style="height: 25px;"></textarea></td>
+				</tr>
+				<tr>
+					<td><textarea id="regid" rows="8" cols="25" placeholder="Copy the registration ID you got from Sendroid android app..." class="textarea"></textarea></td>
+				</tr>
+			</table>
+			<div style="width: 200px; margin: auto; padding: 10px;">
+				<button id="save" class="button big save" title="Save"></button>
+				<button id="cancel" class="button big cancel" title="Cancel"></button>
+			</div>
+		</div>
+		<script src="user_prefs.js"></script>
 	</body>
 </html>

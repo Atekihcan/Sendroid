@@ -10,6 +10,7 @@
 		"256": "data/assets/logo_256.png"
 	},
 	"permissions": [
+		"storage",
 		"contextMenus",
 		"notifications",
         "http://*/*", 
