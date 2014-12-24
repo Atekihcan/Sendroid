@@ -6,6 +6,7 @@ body {
 	text-align: center;
 	font-family: "Roboto", "Nimbus Sans L", "URW Gothic L", Verdana, Tahoma, Helvetica, "Lucida Grande", Geneva, "DejaVu Sans", "Microsoft Sans Serif", sans-serif;
 	background-color: rgb(204, 254, 255);
+	overflow:hidden;
 }
 
 .header {
@@ -31,7 +32,9 @@ body {
 }
 
 .row_cards {
-	border: 5px solid rgba(0, 0, 0, 0);
+	display: block;
+	margin-top: 5px;
+	padding: 2px;
 	background-color: rgb(180, 254, 255);
 	box-shadow: 0px 4px 3px grey;
 }

@@ -58,7 +58,7 @@ chrome.runtime.onMessage.addListener(
 });
 
 /**********   notification constructor for error notifications	**********/
-function sheyarNotify(error, body, showUserPref) {
+function sendroidNotify(error, body, showUserPref) {
 	chrome.notifications.create(
 		"" , {   
 			type: "basic", 
@@ -78,7 +78,9 @@ chrome.runtime.onInstalled.addListener(function() {
 	updateContextMenu();
 });
 
+/* update context menu items using saved device names */
 function updateContextMenu () {
+	/* remove all the menu items */
 	chrome.contextMenus.removeAll();
 	chrome.contextMenus.create({
 		"title":	"Send to android",
@@ -86,6 +88,7 @@ function updateContextMenu () {
 		"contexts":	["image", "link", "selection", "page"]
 	});
 
+	/* repopulate the menu using device list from storage */
 	chrome.storage.local.get("sendroidDB", function(result) {
 		console.log("Creating context menu item list.");
 		for (var i = 0; i < result.sendroidDB.length; i++) {
@@ -101,65 +104,82 @@ function updateContextMenu () {
 /* onClick listener for context menu */
 chrome.contextMenus.onClicked.addListener(checkContext);
 
-/* template for creating sheyar message */
-var sheyarData = {
+/* template for creating sendroid message */
+var sendroidData = {
 	id: 0,			/* for separate android notification	*/
 	type: "type", 	/* data type : image/text/URL			*/
 	body: "body"	/* actual data to be shared				*/
 };
 
-/* check context type and populate sheyarData accordingly */
+/* global variable to store target device id */
+var toDevice = -1;
+
+/* check context type and populate sendroidData accordingly */
 function checkContext(info, tab) {
 	console.log("item " + info.menuItemId + " was clicked");
-	sheyarData.id = Math.floor((1 + Math.random()) * 0x10000);	/* random ID */
+	if (info.menuItemId === "top") {
+		sendroidNotify("Please Add a Device", 
+			"Please add at least one device in the Sendroid settings panel. " +
+			"Click the Sendroid button on top-right corner of menu bar.",
+			false);
+		return;
+	}
+	toDevice = parseInt(info.menuItemId, 10);
+	sendroidData.id = Math.floor((1 + Math.random()) * 0x10000);	/* random ID */
 	if(info.srcUrl != null) {
-		sheyarData.type = "img";
-		sheyarData.body = info.srcUrl;
+		sendroidData.type = "img";
+		sendroidData.body = info.srcUrl;
 	} else if (info.selectionText != null) {
-		sheyarData.type = "txt";
-		sheyarData.body = info.selectionText;
+		sendroidData.type = "txt";
+		sendroidData.body = info.selectionText;
 	} else if (info.linkUrl != null) {
-		sheyarData.type = "url";
-		sheyarData.body = info.linkUrl;
+		sendroidData.type = "url";
+		sendroidData.body = info.linkUrl;
 	} else if (info.pageUrl != null) {
-		sheyarData.type = "url";
-		sheyarData.body = info.pageUrl;
+		sendroidData.type = "url";
+		sendroidData.body = info.pageUrl;
 	}
 	
-	console.log("type : " + sheyarData.type + " (" + sheyarData.id + ")");
-	console.log("body : " + sheyarData.body);
-	createAndSendMessage(info.menuItemId);
+	console.log("type : " + sendroidData.type + " (" + sendroidData.id + ")");
+	console.log("body : " + sendroidData.body);
+	createAndSendMessage();
 };
 
 /* handle context menu click */
-function createAndSendMessage(toDevice) {	
+function createAndSendMessage() {	
 	/* restrict message body length to 2048 characters */
-	if (sheyarData.body.length > 2048) {
+	if (sendroidData.body.length > 2048) {
 		console.log("You can't send more than 2048 characters");
+		sendroidNotify("Message is too long", 
+			"Remember Sendroid cannot send more than 2048 characters.",
+			false);
 		return;
 	}
-		
+	
+	/* FUTURE : if something is wrong from Chrome add-on side,
+	 * probably this is the last place to correct that */
+	
 	/* if everything is okay proceed with message creation */
-	console.log(sheyarData.type + " : " + sheyarData.body.substring(0, 64));
+	console.log(sendroidData.type + " : " + sendroidData.body.substring(0, 64));
 
 	chrome.storage.local.get("sendroidDB", function(result) {
-			var sheyarMessage = JSON.stringify({
+			var sendroidMessage = JSON.stringify({
 			time_to_live: 60,			/* message life in GCM server */
 			delay_while_idle: false,	/* T = wait | F = deliver immediately */
 			data: {
-				id: sheyarData.id,
-				type: sheyarData.type,
-				body: sheyarData.body
+				id: sendroidData.id,
+				type: sendroidData.type,
+				body: sendroidData.body
 			},
 			registration_ids: [result.sendroidDB[toDevice].regid]
 		});
 
-		sendMessage(sheyarMessage, toDevice);
+		sendMessage(sendroidMessage);
 	});
 }
 
 /* send the message to GCM server using http POST */
-function sendMessage(message, toDevice) {
+function sendMessage(message) {
 	var sendRequest = new XMLHttpRequest();
     sendRequest.open('POST', 'https://android.googleapis.com/gcm/send', true);
 	sendRequest.setRequestHeader('Content-type', 'application/json');
@@ -188,26 +208,32 @@ function handleResponse(response) {
 		} else {
 			console.log("Everything is awesome");
 			/* everything is okay, so update device status in storage */
-			//sheyarStorage.storage.devices[toDevice].status = 1;
+			chrome.storage.local.get("sendroidDB", function(result) {
+				console.log("Accessing Storage for updating status");
+				result.sendroidDB[toDevice].status = 1;
+				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
+					console.log("Saving Storage after updating status");
+				});
+			});
 		}
 	/* handle errors in sending message to GCM server */
 	} else if (response.status === 400) {
 		/* JSON parsing errors : invalid/missing fields */
 		console.log("Error : " + response.status + " (" + response.text + ")");
-		sheyarNotify("JSON Parsing Error", 
+		sendroidNotify("JSON Parsing Error", 
 			"Please mail the developer mentioning this error.",
 			false);
 	} else if (response.status === 401) {
 		/* authentication error */
 		console.log("Error : " + response.status + " (" + response.text + ")");
-		sheyarNotify("Authentication Error", 
+		sendroidNotify("Authentication Error", 
 			"Please update Sendroid Chrome extension.\n" + 
 			"If the error persists, mail the developer mentioning this error.",
 			false);
 	} else {
 		console.log("Error : " + response.status + " (" + response.text + ")");
 		/* TODO : Retry */
-		sheyarNotify("Server Error", "Please retry after some time", false);
+		sendroidNotify("Server Error", "Please retry after some time", false);
 	}
 }
 
@@ -220,45 +246,63 @@ function handleSendSuccess(resJSON) {
 			console.log("Info : Updating registration ID");
 			/* FUTURE : should we notify the user? */
 			/* device registration id has changed in the server
-			 * update it in local Sheyar storage too */
-			//sheyarStorage.storage.devices[toDevice].regid = 
-			//			resJSON.results[0].registration_id;
+			 * update it in local Sendroid storage too */
+			chrome.storage.local.get("sendroidDB", function(result) {
+				console.log("Accessing Storage for updating regid");
+				result.sendroidDB[toDevice].regid = 
+						resJSON.results[0].registration_id;
+				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
+					console.log("Saving Storage after updating regid");
+				});
+			});
 		}
 	} else {
 		if (resJSON.results[0].error === "Unavailable") {
 			console.log("Error : Server Unavailable");
-			sheyarNotify("Server Unavailable", 
+			sendroidNotify("Server Unavailable", 
 				"Please retry after some time",
 				false);
 		} else if (resJSON.results[0].error === "NotRegistered") {
 			console.log("Info : Device not registered. Removing device");
-			//sheyarStorage.storage.devices.splice(toDevice, 1);
-			sheyarNotify("Unregistered Device", 
-				"It seems your device has been unregistered or has not been properly " +
-				"registered. Please register the device again using the " + 
-				"Sheyar android application. We are removing the device " +
-				"from Sheyar Firefox database for now.",
-				false);
+			chrome.storage.local.get("sendroidDB", function(result) {
+				console.log("Accessing Storage for NotRegistered");
+				sendroidNotify("Unregistered Device", 
+					"It seems " + result.sendroidDB[toDevice].name + 
+					"has been unregistered or has not been properly " +
+					"registered. Please register the device again using the " + 
+					"Sendroid android application. We are removing the device " +
+					"from Sendroid Chrome database for now.",
+					false);
+				result.sendroidDB.splice(toDevice, 1);
+				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
+					console.log("Saving Storage after NotRegistered");
+				});
+			});
 		} else if (resJSON.results[0].error === "InvalidRegistration") {
 			console.log("Info : Invalid registration. Update required.");
-			sheyarNotify("Invalid registration", 
-				"Registration ID of your device is not Valid. " +
-				"Update device registration ID in Sheyar Firefox database.", 
-				true);
-			//sheyarStorage.storage.devices[toDevice].status = 0;
+			chrome.storage.local.get("sendroidDB", function(result) {
+				console.log("Accessing Storage for NotRegistered");
+				sendroidNotify("Invalid registration", 
+					"Registration ID of " + result.sendroidDB[toDevice].name +" is not Valid. Update device registration ID in Sendroid Chrome database.", 
+					true);
+				result.sendroidDB[toDevice].status = 0;
+				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
+					console.log("Saving Storage after NotRegistered");
+				});
+			});
 		} else if (resJSON.results[0].error === "MismatchSenderId") {
 			console.log("Info : May be because of updates?");
 			/* FUTURE : May be because of updates? | See GCM docs  */
-			sheyarNotify("Mismatched Sender Id", 
+			sendroidNotify("Mismatched Sender Id", 
 				"Please mail the developer mentioning this error.",
 				false);
 		} else if (resJSON.results[0].error === "InternalServerError") {
-			sheyarNotify("Internal Server Error", 
+			sendroidNotify("Internal Server Error", 
 				"Please retry after some time",
 				false);
 		} else if (resJSON.results[0].error === "DeviceMessageRateExceeded") {
 			console.log("Error: DeviceMessageRateExceeded");
-			sheyarNotify("Device MessageRate Exceeded", 
+			sendroidNotify("Device MessageRate Exceeded", 
 				"Slow down, Cowboy!\n" +
 				"Please send do not send messages so frequently to a device.",
 				false);
@@ -274,7 +318,7 @@ function handleSendSuccess(resJSON) {
 						resJSON.results.message_id);
 			console.log("response.json.results.registration_id : " + 
 						resJSON.results.registration_id);
-			sheyarNotify(resJSON.results[0].error, 
+			sendroidNotify(resJSON.results[0].error, 
 				"Please mail the developer mentioning this error.",
 				false);
 		}

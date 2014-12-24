@@ -99,7 +99,7 @@ function showUserPrefs() {
 													result.sendroidDB[i].status + ".png";
 				t_name.children[0].firstChild.title = DEV_STATUS[result.sendroidDB[i].status];
 				t_name.children[1].firstChild.nodeValue = result.sendroidDB[i].name;
-				t_name.style.display = "table-row";
+				t_name.style.display = "block";
 			}
 			
 			if (result.sendroidDB.length === MAX_DEVICE) {
