@@ -11,7 +11,7 @@ import android.app.Activity;
 import android.os.Bundle;
 
 /* Show the settings fragment */
-public class SendroidSettingsActivity extends Activity {
+public class SettingsActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,8 +19,7 @@ public class SendroidSettingsActivity extends Activity {
 
         // Display the fragment as the main content.
         getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, new SendroidPreferenceFragment())
-                .addToBackStack(null)
+                .replace(android.R.id.content, new SettingsPreferenceFragment())
                 .commit();
     }
 

@@ -9,14 +9,18 @@
 <resources>
 
     <string name="app_name">Sendroid</string>
-    <string name="title_activity_sendroid_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
     <string name="reg_status_ok">Registration Successful</string>
     <string name="reg_status_ing">Registering…</string>
     <string name="reg_status_nok">Registration Failed</string>
+    <string name="instruction">After successful registration, mail the registration ID to yourself
+                               or copy it and save for later use. You will need this registration
+                               ID to setup Sendroid extension in your browser.</string>
     <string name="copy_regid">Copy Registration ID</string>
     <string name="mail_regid">Mail Registration ID</string>
     <string name="action_refresh">Reconnect</string>
     <string name="action_settings">Settings</string>
+    <string name="action_feedback">Feedback</string>
     <string name="action_help">Help</string>
 
     <string name="prefs_copy_key">prefs_copy</string>

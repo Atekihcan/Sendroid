@@ -15,24 +15,24 @@ import android.net.Uri;
 
 
 /* Opens the received link in browser and cancels the notification */
-public class SendroidBrowserService extends IntentService {
-    //public static final String TAG = "SendroidBrowserService";
-    public static final String SENDROID_MSG_BODY = "sendroid_message_body";
-    public static final String SENDROID_NOTIFICATION_ID = "sendroid_notification_id";
+public class BrowserService extends IntentService {
+    //public static final String TAG = "BrowserService";
+    public static final String MSG_BODY = "com.atekihcan.msgBody";
+    public static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
     public static int notificationID = 42;
 
-    public SendroidBrowserService() {
-        super("SendroidBrowserService");
+    public BrowserService() {
+        super("BrowserService");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        String msg = (String) intent.getExtras().get(SENDROID_MSG_BODY);
-        notificationID = intent.getIntExtra(SENDROID_NOTIFICATION_ID, 42);
+        String msg = (String) intent.getExtras().get(MSG_BODY);
+        notificationID = intent.getIntExtra(NOTIFICATION_ID, 42);
 
         // Cancel the notification
         NotificationManager mNotificationManager = (NotificationManager)
-                SendroidBrowserService.this.getSystemService(Context.NOTIFICATION_SERVICE);
+                BrowserService.this.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(notificationID);
 
         // Close the notification panel

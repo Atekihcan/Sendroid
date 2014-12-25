@@ -15,25 +15,25 @@ import android.content.Intent;
 import android.content.Context;
 
 /* Puts content of notification into clipboard */
-public class SendroidCopyService extends IntentService {
-    //public static final String TAG = "SendroidCopyService";
-    public static final String SENDROID_CLIP = "sendroid_clip";
-    public static final String SENDROID_MSG_BODY = "sendroid_message_body";
-    public static final String SENDROID_NOTIFICATION_ID = "sendroid_notification_id";
+public class CopyService extends IntentService {
+    //public static final String TAG = "CopyService";
+    public static final String CLIP = "com.atekihcan.clip";
+    public static final String MSG_BODY = "com.atekihcan.msgBody";
+    public static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
     public static int notificationID = 42;
 
-    public SendroidCopyService() {
-        super("SendroidCopyService");
+    public CopyService() {
+        super("CopyService");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        String msg = (String) intent.getExtras().get(SENDROID_MSG_BODY);
-        notificationID = intent.getIntExtra(SENDROID_NOTIFICATION_ID, 42);
+        String msg = (String) intent.getExtras().get(MSG_BODY);
+        notificationID = intent.getIntExtra(NOTIFICATION_ID, 42);
 
         // Cancel the notification
         NotificationManager mNotificationManager = (NotificationManager)
-                SendroidCopyService.this.getSystemService(Context.NOTIFICATION_SERVICE);
+                CopyService.this.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(notificationID);
 
         // Close the notification panel
@@ -42,7 +42,7 @@ public class SendroidCopyService extends IntentService {
         // Put the message body in clipboard
         ClipboardManager clipboard =
                 (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText(SENDROID_CLIP, msg);
+        ClipData clip = ClipData.newPlainText(CLIP, msg);
         clipboard.setPrimaryClip(clip);
     }
 }

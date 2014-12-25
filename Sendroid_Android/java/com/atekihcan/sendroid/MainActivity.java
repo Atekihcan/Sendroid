@@ -35,15 +35,15 @@ import android.widget.Toast;
 import java.io.IOException;
 
 /* Creates main and only UI of the application and creates and stores GCM registration ID */
-public class SendroidMainActivity extends Activity {
+public class MainActivity extends Activity {
 
-    static final String TAG = "SendroidMainActivity";
-    public static final String SENDROID_REGID_CLIP = "sendroid_regid_clip";
-    public static final String SENDROID_REGISTRATION_ID = "sendroid_registration_id";
-    private static final String SENDROID_APP_VERSION = "sendroid_app_version";
+    static final String TAG = "MainActivity";
+    public static final String REGID_CLIP = "com.atekihcan.regidClip";
+    public static final String REGISTRATION_ID = "com.atekihcan.registrationID";
+    private static final String APP_VERSION = "com.atekihcan.appVersion";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    String SENDER_ID = "YOUR_SENDER_ID";
+    String SENDER_ID = "GCM_SENDER_KEY";
 
     String regID;
     Context context;
@@ -53,9 +53,9 @@ public class SendroidMainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PreferenceManager.setDefaultValues(this, R.xml.sendroid_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.app_preferences, false);
 
-        setContentView(R.layout.sendroid_main);
+        setContentView(R.layout.app_main);
         textRegStatus = (TextView) findViewById(R.id.text_reg_status);
 
         context = getApplicationContext();
@@ -102,23 +102,23 @@ public class SendroidMainActivity extends Activity {
 
     /* Stores the registration ID and the app version in the application's SharedPreferences. */
     private void storeRegistrationId(Context context, String regId) {
-        final SharedPreferences sendroidPrefs =
-                getSharedPreferences(SendroidMainActivity.class.getSimpleName(),
+        final SharedPreferences prefs =
+                getSharedPreferences(MainActivity.class.getSimpleName(),
                         Context.MODE_PRIVATE);
         int appVersion = getAppVersion(context);
         Log.i(TAG, "Saving regId on app version " + appVersion);
-        SharedPreferences.Editor editor = sendroidPrefs.edit();
-        editor.putString(SENDROID_REGISTRATION_ID, regId);
-        editor.putInt(SENDROID_APP_VERSION, appVersion);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(REGISTRATION_ID, regId);
+        editor.putInt(APP_VERSION, appVersion);
         editor.apply();
     }
 
     /* Gets the current GCM registration ID, if there is one. */
     private String getGCMRegistrationId(Context context) {
-        final SharedPreferences sendroidPrefs =
-                getSharedPreferences(SendroidMainActivity.class.getSimpleName(),
+        final SharedPreferences prefs =
+                getSharedPreferences(MainActivity.class.getSimpleName(),
                         Context.MODE_PRIVATE);
-        String registrationId = sendroidPrefs.getString(SENDROID_REGISTRATION_ID, "");
+        String registrationId = prefs.getString(REGISTRATION_ID, "");
         if (registrationId.isEmpty()) {
             textRegStatus.setText(R.string.reg_status_nok);
             Log.i(TAG, "Registration not found.");
@@ -127,7 +127,7 @@ public class SendroidMainActivity extends Activity {
 
         /* Check if app was updated; if so, it must clear the registration ID since the
          * existing regID is not guaranteed to work with the new app version. */
-        int registeredVersion = sendroidPrefs.getInt(SENDROID_APP_VERSION, Integer.MIN_VALUE);
+        int registeredVersion = prefs.getInt(APP_VERSION, Integer.MIN_VALUE);
         int currentVersion = getAppVersion(context);
         if (registeredVersion != currentVersion) {
             Log.i(TAG, "App version changed.");
@@ -172,16 +172,18 @@ public class SendroidMainActivity extends Activity {
             /* copy/mail registration id buttons */
             if (view == findViewById(R.id.button_copy_regid)) {
                 ClipboardManager clipBoard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText(SENDROID_REGID_CLIP, regID);
+                ClipData clip = ClipData.newPlainText(REGID_CLIP, regID);
                 clipBoard.setPrimaryClip(clip);
 
-                Toast.makeText(this, "Registration ID is copied.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Copied Registration ID", Toast.LENGTH_SHORT).show();
             } else if (view == findViewById(R.id.button_mail_regid)) {
                 Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
                 emailIntent.setType("text/plain");
                 emailIntent.setData(Uri.parse("mailto:"));
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Sendroid registration ID for : "
-                        + Build.MODEL);
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT,
+                                    getResources().getString(R.string.app_name)
+                                    + " registration ID for : "
+                                    + Build.MODEL);
                 emailIntent.putExtra(Intent.EXTRA_TEXT, regID);
                 startActivity(emailIntent);
                 finish();
@@ -209,7 +211,7 @@ public class SendroidMainActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.sendroid_menu, menu);
+        inflater.inflate(R.menu.app_menu, menu);
         return true;
     }
 
@@ -223,11 +225,27 @@ public class SendroidMainActivity extends Activity {
                 Toast.makeText(this, "Reconnection Successful", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_settings:
-                Intent settingsIntent = new Intent(this, SendroidSettingsActivity.class);
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
+            case R.id.action_feedback:
+                // Mail me
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                emailIntent.setType("text/plain");
+                emailIntent.setData(Uri.parse("mailto:com.atekihcan@gmail.com"));
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT,
+                        getResources().getString(R.string.app_name)
+                                + " Feedback");
+                startActivity(emailIntent);
+                finish();
+                return true;
             case R.id.action_help:
-                // TODO : show help
+                // Open browser to show help page
+                Intent helpIntent = new Intent(Intent.ACTION_VIEW);
+                helpIntent.setData(Uri.parse("http://atekihcan.github.io/Sendroid/#why"));
+                helpIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(helpIntent);
+                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

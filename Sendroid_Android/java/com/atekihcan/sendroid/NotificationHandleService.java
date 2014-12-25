@@ -27,18 +27,18 @@ import android.util.Log;
 import android.widget.Toast;
 
 /**
- * Does the actual handling of the GCM message. SendroidBroadcastReceiver holds a
+ * Does the actual handling of the GCM message. BroadcastReceiver holds a
  * partial wake lock for this service while the service does its work. When the
  * service is finished, it releases the wake lock.
  */
-public class SendroidNotificationHandleService extends IntentService {
-    public static final String TAG = "SendroidNotificationHandleService";
-    public static final String SENDROID_CLIP = "sendroid_clip";
-    public static final String SENDROID_MSG_BODY = "sendroid_message_body";
-    public static final String SENDROID_NOTIFICATION_ID = "sendroid_notification_id";
+public class NotificationHandleService extends IntentService {
+    public static final String TAG = "NotificationHandleService";
+    public static final String CLIP = "com.atekihcan.clip";
+    public static final String MSG_BODY = "com.atekihcan.msgBody";
+    public static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
 
-    public SendroidNotificationHandleService() {
-        super("SendroidNotificationHandleService");
+    public NotificationHandleService() {
+        super("NotificationHandleService");
     }
 
     private Handler uiHandler;
@@ -66,8 +66,8 @@ public class SendroidNotificationHandleService extends IntentService {
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(SendroidNotificationHandleService.this,
-                                "[Sendroid] Send error: " + extras.toString(),
+                        Toast.makeText(NotificationHandleService.this,
+                                "Send error: " + extras.toString(),
                                 Toast.LENGTH_LONG).show();
                     }
                 });
@@ -76,8 +76,8 @@ public class SendroidNotificationHandleService extends IntentService {
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(SendroidNotificationHandleService.this,
-                                "[Sendroid] Deleted message on server: " + extras.toString(),
+                        Toast.makeText(NotificationHandleService.this,
+                                "Deleted message on server: " + extras.toString(),
                                 Toast.LENGTH_LONG).show();
                     }
                 });
@@ -96,7 +96,7 @@ public class SendroidNotificationHandleService extends IntentService {
             }
         }
         // Release the wake lock provided by the WakefulBroadcastReceiver.
-        SendroidBroadcastReceiver.completeWakefulIntent(intent);
+        BroadcastReceiver.completeWakefulIntent(intent);
     }
 
     /* Handles the message by showing a notification with actions */
@@ -111,17 +111,17 @@ public class SendroidNotificationHandleService extends IntentService {
             msgType = "link";
         }
 
-        SharedPreferences sendroidPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Boolean DEFAULT_COPY =
-                sendroidPrefs.getBoolean(getResources().getString(R.string.prefs_copy_key), false);
+                prefs.getBoolean(getResources().getString(R.string.prefs_copy_key), false);
         String DEFAULT_SHARING_APP =
-                sendroidPrefs.getString(getResources().getString(R.string.prefs_share_key),
+                prefs.getString(getResources().getString(R.string.prefs_share_key),
                                       getResources().getString(R.string.prefs_package_default));
 
         // If default copy is on, put the message body in clipboard
         if (DEFAULT_COPY) {
             ClipboardManager clipBoard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText(SENDROID_CLIP, body);
+            ClipData clip = ClipData.newPlainText(CLIP, body);
             clipBoard.setPrimaryClip(clip);
         }
 
@@ -154,17 +154,17 @@ public class SendroidNotificationHandleService extends IntentService {
 
         mBuilder.setContentIntent(pendingShareIntent);
 
-        Intent copyIntent = new Intent(this, SendroidCopyService.class);
-        copyIntent.putExtra(SENDROID_MSG_BODY, body);
-        copyIntent.putExtra(SENDROID_NOTIFICATION_ID, id);
+        Intent copyIntent = new Intent(this, CopyService.class);
+        copyIntent.putExtra(MSG_BODY, body);
+        copyIntent.putExtra(NOTIFICATION_ID, id);
         PendingIntent pendingCopyIntent = PendingIntent.getService(this, id, copyIntent, 0);
         mBuilder.addAction(R.drawable.ic_action_copy, "Copy", pendingCopyIntent);
 
 
         if (type.equals("img") || type.equals("url")) {
-            Intent browserIntent = new Intent(this, SendroidBrowserService.class);
-            browserIntent.putExtra(SENDROID_MSG_BODY, body);
-            browserIntent.putExtra(SENDROID_NOTIFICATION_ID, id);
+            Intent browserIntent = new Intent(this, BrowserService.class);
+            browserIntent.putExtra(MSG_BODY, body);
+            browserIntent.putExtra(NOTIFICATION_ID, id);
 
             PendingIntent pendingBrowserIntent = PendingIntent.getService(this, id,
                     browserIntent, 0);
@@ -174,10 +174,10 @@ public class SendroidNotificationHandleService extends IntentService {
         }
 
         if (type.equals("img")) {
-            Intent imageSaveIntent = new Intent(this, SendroidImageDownloadService.class);
+            Intent imageSaveIntent = new Intent(this, ImageDownloadService.class);
             Log.i(TAG, "Image : " + body);
-            imageSaveIntent.putExtra(SENDROID_MSG_BODY, body);
-            imageSaveIntent.putExtra(SENDROID_NOTIFICATION_ID, id);
+            imageSaveIntent.putExtra(MSG_BODY, body);
+            imageSaveIntent.putExtra(NOTIFICATION_ID, id);
             PendingIntent pendingImageSaveIntent = PendingIntent.getService(this, id,
                     imageSaveIntent, 0);
 

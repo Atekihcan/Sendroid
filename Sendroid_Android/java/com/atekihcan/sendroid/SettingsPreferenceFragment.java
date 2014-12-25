@@ -12,13 +12,13 @@ import android.os.Bundle;
 import android.preference.PreferenceFragment;
 
 /* Displays settings */
-public class SendroidPreferenceFragment extends PreferenceFragment {
+public class SettingsPreferenceFragment extends android.preference.PreferenceFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Load the preferences from an XML resource
-        addPreferencesFromResource(R.xml.sendroid_preferences);
+        addPreferencesFromResource(R.xml.app_preferences);
     }
 }

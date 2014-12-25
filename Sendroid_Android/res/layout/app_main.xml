@@ -19,13 +19,16 @@
         android:paddingBottom="10dp"
         android:textSize="20sp"/>
 
-    <Button android:id="@+id/button_copy_regid"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:paddingTop="10dp"
-        android:text="@string/copy_regid"
-        android:onClick="onClick" />
+        android:paddingBottom="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:text="@string/instruction"/>
 
     <Button android:id="@+id/button_mail_regid"
         android:layout_width="wrap_content"
@@ -33,5 +36,13 @@
         android:layout_gravity="center"
         android:paddingTop="10dp"
         android:text="@string/mail_regid"
+        android:onClick="onClick" />
+
+    <Button android:id="@+id/button_copy_regid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingTop="10dp"
+        android:text="@string/copy_regid"
         android:onClick="onClick" />
 </LinearLayout>

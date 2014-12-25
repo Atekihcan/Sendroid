@@ -24,20 +24,24 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
-/* Downloads image from the notification creates by SendroidNotificationHandleService */
-public class SendroidImageDownloadService extends IntentService {
+/* Downloads image from the notification creates by NotificationHandleService */
+public class ImageDownloadService extends IntentService {
 
-    public static final String TAG = "SendroidImageDownloadService";
+    public static final String TAG = "ImageDownloadService";
 
-    private static final String SENDROID_MSG_BODY = "sendroid_message_body";
-    private static final String SENDROID_NOTIFICATION_ID = "sendroid_notification_id";
+    private static final String MSG_BODY = "com.atekihcan.msgBody";
+    private static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
 
     private static String filePath = Environment.getExternalStorageDirectory().getPath();
 
@@ -46,8 +50,8 @@ public class SendroidImageDownloadService extends IntentService {
     private NotificationManager mNotificationManager;
     private static int notificationID = 42;
 
-    public SendroidImageDownloadService() {
-        super("SendroidImageDownloadService");
+    public ImageDownloadService() {
+        super("ImageDownloadService");
     }
 
     SimpleDateFormat date = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
@@ -55,34 +59,49 @@ public class SendroidImageDownloadService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        final String imageURL = intent.getStringExtra(SENDROID_MSG_BODY);
-        notificationID = intent.getIntExtra(SENDROID_NOTIFICATION_ID, 42);
+        final String imageURL = intent.getStringExtra(MSG_BODY);
+        notificationID = intent.getIntExtra(NOTIFICATION_ID, 42);
         Log.i(TAG, "Image : " + imageURL);
-
-
-        // Create notification
-        mNotificationManager = (NotificationManager) SendroidImageDownloadService.this
-                                    .getSystemService(Context.NOTIFICATION_SERVICE);
-
-        Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-
-        mBuilder = new NotificationCompat.Builder(SendroidImageDownloadService.this)
-                        .setSmallIcon(R.drawable.ic_stat)
-                        .setLargeIcon(largeIcon)
-                        .setContentTitle("Downloading Image")
-                        .setContentText("Download in progress")
-                        .setProgress(0, 0, false)
-                        .setAutoCancel(false);
-
-        mNotificationManager.notify(notificationID, mBuilder.build());
 
         DownloadFile downloadFile = new DownloadFile();
         downloadFile.execute(imageURL);
+
+        // Create notification
+        mNotificationManager = (NotificationManager) ImageDownloadService.this
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+
+        Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+
+        mBuilder = new NotificationCompat.Builder(ImageDownloadService.this)
+                .setSmallIcon(R.drawable.ic_stat)
+                .setLargeIcon(largeIcon)
+                .setContentTitle("Downloading Image")
+                .setContentText("Download in progress")
+                .setProgress(0, 0, false)
+                .setAutoCancel(false);
+
+        mNotificationManager.notify(notificationID, mBuilder.build());
     }
 
     private class DownloadFile extends AsyncTask<String, Integer, String> {
         @Override
         protected String doInBackground(String... sUrl) {
+            if (!isNetworkAvailable()) {
+                Log.w(TAG, "Cannot connect to network");
+                mBuilder.setContentText("You are not connected to internet. Try again later.");
+                mNotificationManager.notify(notificationID, mBuilder.build());
+                Handler uiHandler =
+                        new Handler(ImageDownloadService.this.getMainLooper());
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(ImageDownloadService.this,
+                                "Network not available. Cannot download image.",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+                return null;
+            }
             try {
                 URL url = new URL(sUrl[0]);
                 URLConnection connection = url.openConnection();
@@ -93,25 +112,39 @@ public class SendroidImageDownloadService extends IntentService {
                 // download the file
                 InputStream input = new BufferedInputStream(url.openStream());
 
-                File sendroidImageDir = new File(Environment.getExternalStorageDirectory().getPath()
-                        + "/Sendroid");
+                File imageDir = new File(Environment.getExternalStorageDirectory().getPath()
+                        + "/" + getResources().getString(R.string.app_name));
 
-                if (!sendroidImageDir.exists()) {
+                if (!imageDir.exists()) {
                     try {
-                        sendroidImageDir.mkdirs();
+                        imageDir.mkdirs();
                     } catch (Exception e) {
                         Log.w(TAG, e.toString() + " (Cannot create directory)");
                     }
                 }
 
                 filePath =  Environment.getExternalStorageDirectory().getPath()
-                                + "/Sendroid/image_" + date.format(now) + ".jpg";
+                                + "/" + getResources().getString(R.string.app_name)
+                                + "/image_" + date.format(now) + ".jpg";
 
                 File file = new File(filePath);
                 try {
                     file.createNewFile();
                 } catch (Exception e) {
                     Log.w(TAG, e.toString() + " (Cannot create file)");
+                    mBuilder.setContentText("Cannot access SD card.");
+                    mNotificationManager.notify(notificationID, mBuilder.build());
+                    Handler uiHandler =
+                            new Handler(ImageDownloadService.this.getMainLooper());
+                    uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(ImageDownloadService.this,
+                                    "Unable to access SD card. Cannot download image.",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    return null;
                 }
 
                 FileOutputStream output = new FileOutputStream(file);
@@ -135,11 +168,13 @@ public class SendroidImageDownloadService extends IntentService {
         }
     }
 
+    /* Handles progress changed by showing progress bar */
     void progressChange(int progress){
         if (lastUpdate != progress) {
             lastUpdate = progress;
             if (progress < 100) {
-                mBuilder.setProgress(100, progress, false);
+                mBuilder.setProgress(100, progress, false)
+                        .setOngoing(true);
                 mNotificationManager.notify(notificationID, mBuilder.build());
             } else {
                 notifyImageDownloadComplete();
@@ -147,17 +182,18 @@ public class SendroidImageDownloadService extends IntentService {
         }
     }
 
+    /* When download is complete updates notification with share intent */
     void notifyImageDownloadComplete() {
-        SharedPreferences sendroidPrefs = PreferenceManager
-                .getDefaultSharedPreferences(SendroidImageDownloadService.this);
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(ImageDownloadService.this);
 
-        String DEFAULT_IMAGE_SHARING_APP = sendroidPrefs.getString(
+        String DEFAULT_IMAGE_SHARING_APP = prefs.getString(
                 getResources().getString(R.string.prefs_image_key),
                 getResources().getString(R.string.prefs_package_default));
 
         // Create notification
         NotificationManager mNotificationManager = (NotificationManager)
-                SendroidImageDownloadService.this
+                ImageDownloadService.this
                         .getSystemService(Context.NOTIFICATION_SERVICE);
 
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -171,14 +207,14 @@ public class SendroidImageDownloadService extends IntentService {
         }
 
         PendingIntent pendingShareIntent = PendingIntent.getActivity(
-                SendroidImageDownloadService.this, notificationID,
+                ImageDownloadService.this, notificationID,
                 Intent.createChooser(shareIntent, "Share image with..."),
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
         Bitmap bitmap = BitmapFactory.decodeFile(filePath);
 
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(SendroidImageDownloadService.this)
+                new NotificationCompat.Builder(ImageDownloadService.this)
                         .setSmallIcon(R.drawable.ic_stat)
                         .setContentTitle("Download Complete")
                         .setContentText("Touch to share image")
@@ -189,5 +225,13 @@ public class SendroidImageDownloadService extends IntentService {
 
         mBuilder.setContentIntent(pendingShareIntent);
         mNotificationManager.notify(notificationID, mBuilder.build());
+    }
+
+    /* Checks whether network is present */
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
