@@ -19,42 +19,32 @@ if (!devices) {
 }
 
 /****************************************************************************/
-/*					Creating UI for user preferences						*/
+/*					Hnadling UI for user preferences						*/
 /****************************************************************************/
 
+/* listens to device information changes and updates storage */
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
-	if (request.type == "delete") {
 		chrome.storage.local.get("sendroidDB", function(result) {
-			console.log("Accessing Storage for deleting device_" + request.id);
-			result.sendroidDB.splice(request.id, 1);
-			chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
-				console.log("Saving Storage after deleting");
-				updateContextMenu();
-			});
+			if (request.type == "delete") {
+				console.log("Deleting device_" + request.id);
+				result.sendroidDB.splice(request.id, 1);
+			} else if (request.type == "add") {
+				console.log("[storage] : adding new device");
+				result.sendroidDB.push(request.device);
+			} else if (request.type == "edit") {
+				console.log("[storage] : editing device_" + request.id);
+				result.sendroidDB[request.id].name = request.device.name;
+				result.sendroidDB[request.id].regid = request.device.regid;
+				result.sendroidDB[request.id].status = request.device.status;
+			}
+			chrome.storage.local.set(
+				{ "sendroidDB": result.sendroidDB }, 
+				function() {
+					console.log("[storage] : saving after modification");
+					updateContextMenu();
+				});
 		});
-	} else if (request.type == "add") {
-		chrome.storage.local.get("sendroidDB", function(result) {
-			console.log("Accessing Storage for adding new device");
-			result.sendroidDB.push(request.device);
-			chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
-				console.log("Saving Storage after Adding");
-				updateContextMenu();
-			});
-		});
-	} else if (request.type == "edit") {		
-		chrome.storage.local.get("sendroidDB", function(result) {
-			console.log("Accessing Storage for editing device_" + request.id);
-			result.sendroidDB[request.id].name = request.device.name;
-			result.sendroidDB[request.id].regid = request.device.regid;
-			result.sendroidDB[request.id].status = request.device.status;
-			chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
-				console.log("Saving Storage after Editing");
-				updateContextMenu();
-			});
-		});
-	}
-	sendResponse({ type: "show" });
 });
 
 /**********   notification constructor for error notifications	**********/
@@ -125,7 +115,7 @@ function checkContext(info, tab) {
 		return;
 	}
 	toDevice = parseInt(info.menuItemId, 10);
-	sendroidData.id = Math.floor((1 + Math.random()) * 0x10000);	/* random ID */
+	sendroidData.id = Math.floor((1 + Math.random()) * 0x10000); /* random ID */
 	if(info.srcUrl != null) {
 		sendroidData.type = "img";
 		sendroidData.body = info.srcUrl;
@@ -211,9 +201,11 @@ function handleResponse(response) {
 			chrome.storage.local.get("sendroidDB", function(result) {
 				console.log("Accessing Storage for updating status");
 				result.sendroidDB[toDevice].status = 1;
-				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
-					console.log("Saving Storage after updating status");
-				});
+				chrome.storage.local.set(
+					{ "sendroidDB": result.sendroidDB }, 
+					function() {
+						console.log("Saving Storage after updating status");
+					});
 			});
 		}
 	/* handle errors in sending message to GCM server */
@@ -251,9 +243,11 @@ function handleSendSuccess(resJSON) {
 				console.log("Accessing Storage for updating regid");
 				result.sendroidDB[toDevice].regid = 
 						resJSON.results[0].registration_id;
-				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
-					console.log("Saving Storage after updating regid");
-				});
+				chrome.storage.local.set(
+					{ "sendroidDB": result.sendroidDB }, 
+					function() {
+						console.log("Saving Storage after updating regid");
+					});
 			});
 		}
 	} else {
@@ -274,21 +268,26 @@ function handleSendSuccess(resJSON) {
 					"from Sendroid Chrome database for now.",
 					false);
 				result.sendroidDB.splice(toDevice, 1);
-				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
-					console.log("Saving Storage after NotRegistered");
-				});
+				chrome.storage.local.set(
+					{ "sendroidDB": result.sendroidDB }, 
+					function() {
+						console.log("Saving Storage after NotRegistered");
+					});
 			});
 		} else if (resJSON.results[0].error === "InvalidRegistration") {
 			console.log("Info : Invalid registration. Update required.");
 			chrome.storage.local.get("sendroidDB", function(result) {
 				console.log("Accessing Storage for NotRegistered");
 				sendroidNotify("Invalid registration", 
-					"Registration ID of " + result.sendroidDB[toDevice].name +" is not Valid. Update device registration ID in Sendroid Chrome database.", 
+					"Registration ID of " + result.sendroidDB[toDevice].name +
+					" is not Valid. Update it in Sendroid Chrome database.", 
 					true);
 				result.sendroidDB[toDevice].status = 0;
-				chrome.storage.local.set({ "sendroidDB": result.sendroidDB }, function() {
-					console.log("Saving Storage after NotRegistered");
-				});
+				chrome.storage.local.set(
+					{ "sendroidDB": result.sendroidDB }, 
+					function() {
+						console.log("Saving Storage after NotRegistered");
+					});
 			});
 		} else if (resJSON.results[0].error === "MismatchSenderId") {
 			console.log("Info : May be because of updates?");

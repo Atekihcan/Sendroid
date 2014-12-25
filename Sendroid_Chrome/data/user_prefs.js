@@ -32,7 +32,7 @@ var updateDevice = false;
 /****************************************************************************/
 /* handle add_device button click */
 addButton.addEventListener('click', function onAddDeviceClick() {
-	console.log("Adding device");
+	console.log("[cs] : Adding device");
 	/* reset update flags */
 	updateID =  -1;
 	updateDevice = false;
@@ -43,16 +43,17 @@ addButton.addEventListener('click', function onAddDeviceClick() {
 /* handle edit button clicks */
 function onEdit(deviceID) {
 	console.log("Editing device_" + deviceID);
+	/* set update flags */
 	updateID =  deviceID;
 	updateDevice = true;
 	chrome.storage.local.get("sendroidDB", function(result) {
-		console.log("Accessing Storage from content script");
 		nameArea.value = result.sendroidDB[deviceID].name;
 		regidArea.value = result.sendroidDB[deviceID].regid;
 	});
 	prefDiv.style.display = "none";
 	addDiv.style.display = "block";
 }
+
 editButton[0].addEventListener('click', function() { onEdit(0) }, false);
 editButton[1].addEventListener('click', function() { onEdit(1) }, false);
 editButton[2].addEventListener('click', function() { onEdit(2) }, false);
@@ -60,20 +61,30 @@ editButton[3].addEventListener('click', function() { onEdit(3) }, false);
 
 /* handle delete button clicks */
 function onDelete(deviceID) {
-	console.log("Deleting device_" + deviceID);
-	chrome.runtime.sendMessage({type: "delete", id: deviceID}, function(response) {
-		if (response.type == "show") {
-			showUserPrefs();
-		}
+	console.log("[cs] : Deleting device_" + deviceID);
+	chrome.runtime.sendMessage(
+		{ type: "delete", id: deviceID }, 
+		function(response) {
+			console.log("[cs] : response after deleting");
+		});
+
+	/* dummy read-write acces for synchronization */
+	chrome.storage.local.get("sendroidDB", function(result) {
+		chrome.storage.local.set(
+			{ "sendroidDB": result.sendroidDB }, 
+			function() {
+				console.log("[cs] : dummy read-write");
+				showUserPrefs();
+			});
 	});
 }
+
 deleteButton[0].addEventListener('click', function() { onDelete(0) }, false);
 deleteButton[1].addEventListener('click', function() { onDelete(1) }, false);
 deleteButton[2].addEventListener('click', function() { onDelete(2) }, false);
 deleteButton[3].addEventListener('click', function() { onDelete(3) }, false);
 
-showUserPrefs();
-
+/* prepare user preference panel for showing */
 function showUserPrefs() {	
 	/* reset the panel to clear device details to handle deletion */
 	deviceList.style.display = "none";
@@ -85,8 +96,6 @@ function showUserPrefs() {
 	}
 	
 	chrome.storage.local.get("sendroidDB", function(result) {
-		console.log("Accessing Storage from content script");
-		console.log("CS : " + result.sendroidDB);
 		/* update the table fields with proper values */
 		if (result.sendroidDB.length > 0) {
 			deviceList.style.display = "table";
@@ -96,37 +105,42 @@ function showUserPrefs() {
 			for (var i = 0; i < result.sendroidDB.length; i++) {
 				var t_name = document.getElementById("device_" + i);
 				t_name.children[0].firstChild.src = "assets/ic_status_" + 
-													result.sendroidDB[i].status + ".png";
-				t_name.children[0].firstChild.title = DEV_STATUS[result.sendroidDB[i].status];
-				t_name.children[1].firstChild.nodeValue = result.sendroidDB[i].name;
+									result.sendroidDB[i].status + ".png";
+				t_name.children[0].firstChild.title = 
+									DEV_STATUS[result.sendroidDB[i].status];
+				t_name.children[1].firstChild.nodeValue = 
+									result.sendroidDB[i].name;
 				t_name.style.display = "block";
 			}
 			
 			if (result.sendroidDB.length === MAX_DEVICE) {
 				noDevice.children[0].firstChild.nodeValue = 
-										"Maximum device limit reached.";
+									"Maximum device limit reached.";
 				noDevice.children[1].firstChild.nodeValue = 
-										"Delete some device to add a new one.";
+									"Delete some device to add a new one.";
 				addButton.style.display = "none";
 			} else {
 				addButton.style.display = "block";
 			}
 		} else {
 			noDevice.children[0].firstChild.nodeValue = 
-									"No android device found.";
+								"No android device found.";
 			noDevice.children[1].firstChild.nodeValue = 
-									"Sendroid needs at least one device to work.";
+								"Sendroid needs at least one device to work.";
 		}
-	});
 
-	/* reset text areas and panel display properties */
-	nameArea.value = '';
-	regidArea.value = '';	
-	nameArea.style.border = "";
-	regidArea.style.border = "";
-	addDiv.style.display = "none";
-	prefDiv.style.display = "block";
+		/* reset text areas and panel display properties */
+		nameArea.value = '';
+		regidArea.value = '';	
+		nameArea.style.border = "";
+		regidArea.style.border = "";
+		addDiv.style.display = "none";
+		prefDiv.style.display = "block";
+	});
 }
+
+/* show user preference panel */
+showUserPrefs();
 
 /****************************************************************************/
 /*					Add/Edit Device Panel Handling							*/
@@ -143,24 +157,34 @@ saveButton.addEventListener('click', function onClick() {
 	
 	/* pass inputs to addon only if both inputs are valid */
 	if (newDevice.name && newDevice.regid) {
-		console.log(newDevice);
-		console.log(updateDevice + " and " + updateID);
-		/* for update event, update storage */
+		console.log("[cs] : " + updateDevice + " and " + updateID);
+		/* for update event, send device id as well as device info */
 		if (updateDevice) {
-			chrome.runtime.sendMessage({type: "edit", id: updateID, device: newDevice}, function(response) {
-				if (response.type == "show") {
-					showUserPrefs();
-				}
-			});
+			chrome.runtime.sendMessage(
+				{ type: "edit", id: updateID, device: newDevice }, 
+				function(response) {
+					console.log("[cs] : response after editing");
+				});
 
-		/* for add event, add new device to storage */
+		/* for add event, send device info */
 		} else {
-			chrome.runtime.sendMessage({type: "add", device: newDevice}, function(response) {
-				if (response.type == "show") {
-					showUserPrefs();
-				}
-			});
+			chrome.runtime.sendMessage(
+				{ type: "add", device: newDevice }, 
+				function(response) {
+					console.log("[cs] : response after adding");
+				});
 		}
+
+		/* dummy read-write acces for synchronization */
+		chrome.storage.local.get("sendroidDB", function(result) {
+			chrome.storage.local.set(
+				{ "sendroidDB": result.sendroidDB }, 
+					function() {
+					console.log("[cs] : dummy read-write");
+					showUserPrefs();
+				});
+		});
+
 	/* if inputs are empty, mark input boxes in red */
 	} else {
 		if (newDevice.name) {
@@ -178,6 +202,6 @@ saveButton.addEventListener('click', function onClick() {
 
 /* handle cancel button click */
 cancelButton.addEventListener('click', function onClick() {
-	console.log("Cancelling add/edit");
+	console.log("[cs] : Cancelling add/edit");
 	showUserPrefs();
 }, false);

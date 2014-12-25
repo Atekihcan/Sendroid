@@ -1,12 +1,14 @@
 {
 	"name": "Sendroid",
-	"description": "Send text or link to your android device",
-	"version": "0.7",
+	"description": "Extension for sharing content with Android devices",
+	"author": "Atekihcan <com.atekihcan@gmail.com>",
+	"default_locale": "en",
+	"version": "0.1",
 	"icons": {
-		//"16": "data/assets/logo_16.png",
+		"16": "data/assets/logo_16.png",
 		"32": "data/assets/logo_32.png",
-		//"48": "data/assets/logo_48.png",
-		//"128": "data/assets/logo_128.png",
+		"48": "data/assets/logo_48.png",
+		"128": "data/assets/logo_128.png",
 		"256": "data/assets/logo_256.png"
 	},
 	"permissions": [

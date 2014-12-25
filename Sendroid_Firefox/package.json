@@ -4,9 +4,9 @@
   "id": "jid1-JB2WXsFRBAQfFQ",
   "description": "Add-on for sharing content with Android devices",
   "author": "Atekihcan <com.atekihcan@gmail.com>",
-  "homepage": "http://atekihcan.github.io/sendroid/",
+  "homepage": "http://atekihcan.github.io/Sendroid/",
   "icon": "data/assets/logo_32.png",
   "icon64": "data/assets/logo_64.png",
   "license": "MPL 2.0",
-  "version": "1.0"
+  "version": "0.1"
 }

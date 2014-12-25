@@ -7,7 +7,6 @@ var sendroidDB = require("sdk/simple-storage");
 var toggleButton = require("sdk/ui/button/toggle");
 
 var APP_NAME	= "Sendroid"
-var EMAIL_ID	= "com.atekihcan@gmail.com"
 var APP_ICON_18 = self.data.url("assets/logo_18.png");
 var APP_ICON_32 = self.data.url("assets/logo_32.png");
 var APP_ICON_36 = self.data.url("assets/logo_36.png");
@@ -307,15 +306,14 @@ function handleResponse(response) {
 		/* JSON parsing errors : invalid/missing fields */
 		console.log("Error : " + response.status + " (" + response.text + ")");
 		sendroidNotify("JSON Parsing Error", 
-			"Please send a mail to the developer (" + EMAIL_ID +
-			") mentioning this error.",
+			"Please mail the developer mentioning this error.",
 			false);
 	} else if (response.status === 401) {
 		/* authentication error */
 		console.log("Error : " + response.status + " (" + response.text + ")");
 		sendroidNotify("Authentication Error", 
-			"Please send a mail to the developer (" + EMAIL_ID +
-			") mentioning this error.",
+			"Please update Sendroid Firefox extension.\n" + 
+			"If the error persists, mail the developer mentioning this error.",
 			false);
 	} else {
 		console.log("Error : " + response.status + " (" + response.text + ")");
@@ -368,8 +366,7 @@ function handleSendSuccess(res) {
 			console.log("Info : May be because of updates?");
 			/* FUTURE : May be because of updates? | See GCM docs  */
 			sendroidNotify("Mismatched Sender Id", 
-				"Please send a mail to the developer (" + EMAIL_ID +
-				") mentioning this error.",
+				"Please mail the developer mentioning this error.",
 				false);
 		} else if (res.json.results[0].error === "InternalServerError") {
 			sendroidNotify("Internal Server Error", 
@@ -378,7 +375,8 @@ function handleSendSuccess(res) {
 		} else if (res.json.results[0].error === "DeviceMessageRateExceeded") {
 			console.log("Error: DeviceMessageRateExceeded");
 			sendroidNotify("Device MessageRate Exceeded", 
-				"Slow down, Cowboy! Please do not send messages so frequently.",
+				"Slow down, Cowboy!\n" +
+				"Please send do not send messages so frequently to a device.",
 				false);
 		} else {
 			console.log("Error: " + res.json.results[0].error + 
@@ -393,8 +391,7 @@ function handleSendSuccess(res) {
 			console.log("response.json.results.registration_id : " + 
 						res.json.results.registration_id);
 			sendroidNotify(res.json.results[0].error, 
-				"Please send a mail to the developer (" + EMAIL_ID +
-				") mentioning this error.",
+				"Please mail the developer mentioning this error.",
 				false);
 		}
 	}
