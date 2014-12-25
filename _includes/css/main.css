@@ -258,6 +258,11 @@ nav ul li:hover, nav ul li.active {
 .longlist { font-size: 14px !important; }
 .longlist li { margin-bottom: 3px; }
 
+/* for fontelico icon fonts */
+@import url(http://weloveiconfonts.com/api/?family=fontelico);
+[class*="fontelico-"]:before {
+      font-family: 'fontelico', sans-serif;
+}
 
 /* Showing other icon images */
 .sectiondivider-big {
