@@ -258,12 +258,6 @@ nav ul li:hover, nav ul li.active {
 .longlist { font-size: 14px !important; }
 .longlist li { margin-bottom: 3px; }
 
-/* for fontelico icon fonts */
-@import url(http://weloveiconfonts.com/api/?family=fontelico);
-[class*="fontelico-"]:before {
-      font-family: 'fontelico', sans-serif;
-}
-
 /* Showing other icon images */
 .sectiondivider-big {
 	width: 256px;
@@ -278,9 +272,17 @@ nav ul li:hover, nav ul li.active {
 	margin-top: 14px;
 }
 .sectiondivider .text-blue {margin-left:5px !important;}
+
+/* for contact form*/
+.contact-form {
+    margin: 0px auto;
+    width: 50%;
+}
+
 /* for top image */
 @media only screen and (max-width:959px) {
 	/* for small screens, may be later */
+    .contact-form { width:80%; }
 }
 /* mid size (tablets, landscapes) */
 @media only screen and (max-width: 679px) {
@@ -289,11 +291,13 @@ nav ul li:hover, nav ul li.active {
     min-width:60px;
     line-height:40px;
   }
+  .contact-form { width:80%; }
 }
 
 /* tiny size (phones) */
 @media only screen and (max-width: 380px) {
   nav ul li { min-width:90px; line-height:20px; }
+  .contact-form { width:80%; }
 }
 
 /* anything not desktop */
@@ -331,4 +335,6 @@ nav ul li:hover, nav ul li.active {
     -moz-column-count:    2;
     column-count:         2;
   }
+
+  .contact-form { width:80%; }
 }
