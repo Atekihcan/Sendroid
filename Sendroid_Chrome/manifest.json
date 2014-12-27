@@ -1,9 +1,9 @@
 {
 	"name": "Sendroid",
-	"description": "Extension for sharing content with Android devices",
+    "short_name": "Sendroid",
+	"description": "Easily share text or link from browser to android device.",
 	"author": "Atekihcan <com.atekihcan@gmail.com>",
-	"default_locale": "en",
-	"version": "0.1",
+	"version": "1.0.0",
 	"icons": {
 		"16": "data/assets/logo_16.png",
 		"32": "data/assets/logo_32.png",

@@ -85,6 +85,7 @@ function updateContextMenu () {
 			chrome.contextMenus.create({
 				"title":	result.sendroidDB[i].name,
 				"id":		i.toString(),
+                "contexts": ["image", "link", "selection", "page"], 
 				"parentId":	"top"
 			});
 		};
