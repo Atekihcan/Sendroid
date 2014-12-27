@@ -258,6 +258,7 @@ nav ul li:hover, nav ul li.active {
 .longlist { font-size: 14px !important; }
 .longlist li { margin-bottom: 3px; }
 
+/* modification by Atekihcan */
 /* Showing other icon images */
 .sectiondivider-big {
 	width: 256px;
@@ -272,6 +273,11 @@ nav ul li:hover, nav ul li.active {
 	margin-top: 14px;
 }
 .sectiondivider .text-blue {margin-left:5px !important;}
+
+/* overwriting horizontal rule top/bottom margins */
+hr {
+    margin: 20px auto;
+}
 
 /* for contact form*/
 .contact-form {
