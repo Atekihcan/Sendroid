@@ -22,5 +22,4 @@ public class SettingsActivity extends Activity {
                 .replace(android.R.id.content, new SettingsPreferenceFragment())
                 .commit();
     }
-
 }

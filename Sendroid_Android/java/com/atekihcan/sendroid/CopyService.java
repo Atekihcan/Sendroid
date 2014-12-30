@@ -16,7 +16,7 @@ import android.content.Context;
 
 /* Puts content of notification into clipboard */
 public class CopyService extends IntentService {
-    //public static final String TAG = "CopyService";
+
     public static final String CLIP = "com.atekihcan.clip";
     public static final String MSG_BODY = "com.atekihcan.msgBody";
     public static final String NOTIFICATION_ID = "com.atekihcan.notificationID";

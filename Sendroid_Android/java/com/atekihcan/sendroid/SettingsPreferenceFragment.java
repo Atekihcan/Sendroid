@@ -9,7 +9,6 @@ package com.atekihcan.sendroid;
 
 
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
 
 /* Displays settings */
 public class SettingsPreferenceFragment extends android.preference.PreferenceFragment {

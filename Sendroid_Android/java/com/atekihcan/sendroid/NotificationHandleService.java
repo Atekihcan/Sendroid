@@ -23,8 +23,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.widget.Toast;
+
+import timber.log.Timber;
 
 /**
  * Does the actual handling of the GCM message. BroadcastReceiver holds a
@@ -32,7 +33,7 @@ import android.widget.Toast;
  * service is finished, it releases the wake lock.
  */
 public class NotificationHandleService extends IntentService {
-    public static final String TAG = "NotificationHandleService";
+
     public static final String CLIP = "com.atekihcan.clip";
     public static final String MSG_BODY = "com.atekihcan.msgBody";
     public static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
@@ -45,6 +46,10 @@ public class NotificationHandleService extends IntentService {
 
     public void onCreate() {
         super.onCreate();
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        }
         uiHandler = new Handler();
     }
 
@@ -62,7 +67,7 @@ public class NotificationHandleService extends IntentService {
              * not interested in, or that you don't recognize.
              */
             if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
-                Log.i(TAG, "Send error: " + extras.toString());
+                Timber.d("Send error: " + extras.toString());
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -72,7 +77,7 @@ public class NotificationHandleService extends IntentService {
                     }
                 });
             } else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
-                Log.i(TAG, "Deleted message on server: " + extras.toString());
+                Timber.d("Deleted message on server: " + extras.toString());
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -82,7 +87,7 @@ public class NotificationHandleService extends IntentService {
                     }
                 });
             } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
-                Log.i(TAG, "Received : " + extras.get("type") + " : " + extras.get("body"));
+                Timber.d("Received : " + extras.get("type") + " : " + extras.get("body"));
                 // If received message is either text or image or link, handle message
                 if (extras.get("type").equals("txt") ||
                     extras.get("type").equals("img") ||
@@ -91,7 +96,7 @@ public class NotificationHandleService extends IntentService {
                             extras.get("type").toString(), extras.get("body").toString());
                 } else {
                     // Should never happen
-                    Log.i(TAG, "Error : Invalid message");
+                    Timber.d("Error : Invalid message");
                 }
             }
         }
@@ -148,9 +153,11 @@ public class NotificationHandleService extends IntentService {
                     .setSmallIcon(R.drawable.ic_stat)
                     .setLargeIcon(largeIcon)
                     .setContentTitle("Received " + msgType)
-                    .setContentText("Touch to share " + msgType)
+                    .setContentText("Touch to share")
                     .setAutoCancel(true)
-                    .setStyle(new NotificationCompat.BigTextStyle().bigText(body));
+                    .setStyle(new NotificationCompat.BigTextStyle()
+                                                    .bigText(body)
+                                                    .setSummaryText("Touch to share"));
 
         mBuilder.setContentIntent(pendingShareIntent);
 
@@ -175,7 +182,6 @@ public class NotificationHandleService extends IntentService {
 
         if (type.equals("img")) {
             Intent imageSaveIntent = new Intent(this, ImageDownloadService.class);
-            Log.i(TAG, "Image : " + body);
             imageSaveIntent.putExtra(MSG_BODY, body);
             imageSaveIntent.putExtra(NOTIFICATION_ID, id);
             PendingIntent pendingImageSaveIntent = PendingIntent.getService(this, id,

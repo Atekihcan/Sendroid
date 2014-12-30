@@ -24,7 +24,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -34,12 +33,14 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
+import timber.log.Timber;
+
 /* Creates main and only UI of the application and creates and stores GCM registration ID */
 public class MainActivity extends Activity {
 
-    static final String TAG = "MainActivity";
     public static final String REGID_CLIP = "com.atekihcan.regidClip";
     public static final String REGISTRATION_ID = "com.atekihcan.registrationID";
+
     private static final String APP_VERSION = "com.atekihcan.appVersion";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
@@ -55,6 +56,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         PreferenceManager.setDefaultValues(this, R.xml.app_preferences, false);
 
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        }
+
         setContentView(R.layout.app_main);
         textRegStatus = (TextView) findViewById(R.id.text_reg_status);
 
@@ -64,7 +69,6 @@ public class MainActivity extends Activity {
         if (isGooglePlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(this);
             regID = getGCMRegistrationId(context);
-            Log.i(TAG, "Registration ID = " + regID);
 
             if (regID.isEmpty()) {
                 textRegStatus.setText(R.string.reg_status_ing);
@@ -73,7 +77,7 @@ public class MainActivity extends Activity {
                 textRegStatus.setText(R.string.reg_status_ok);
             }
         } else {
-            Log.i(TAG, "No valid Google Play Services APK found.");
+            Timber.d("No valid Google Play Services APK found.");
         }
     }
 
@@ -92,7 +96,7 @@ public class MainActivity extends Activity {
                 GooglePlayServicesUtil.getErrorDialog(resultCode, this,
                         PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
-                Log.i(TAG, "This device is not supported.");
+                Timber.d("This device is not supported.");
                 finish();
             }
             return false;
@@ -106,7 +110,7 @@ public class MainActivity extends Activity {
                 getSharedPreferences(MainActivity.class.getSimpleName(),
                         Context.MODE_PRIVATE);
         int appVersion = getAppVersion(context);
-        Log.i(TAG, "Saving regId on app version " + appVersion);
+        Timber.d("Saving regId on app version " + appVersion);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(REGISTRATION_ID, regId);
         editor.putInt(APP_VERSION, appVersion);
@@ -121,7 +125,7 @@ public class MainActivity extends Activity {
         String registrationId = prefs.getString(REGISTRATION_ID, "");
         if (registrationId.isEmpty()) {
             textRegStatus.setText(R.string.reg_status_nok);
-            Log.i(TAG, "Registration not found.");
+            Timber.d("Registration not found.");
             return "";
         }
 
@@ -130,7 +134,7 @@ public class MainActivity extends Activity {
         int registeredVersion = prefs.getInt(APP_VERSION, Integer.MIN_VALUE);
         int currentVersion = getAppVersion(context);
         if (registeredVersion != currentVersion) {
-            Log.i(TAG, "App version changed.");
+            Timber.d("App version changed.");
             return "";
         }
         return registrationId;
@@ -147,13 +151,13 @@ public class MainActivity extends Activity {
                         gcm = GoogleCloudMessaging.getInstance(context);
                     }
                     regID = gcm.register(SENDER_ID);
-                    Log.i(TAG, "Registration ID = " + regID);
                     msg = getResources().getString(R.string.reg_status_ok);
 
                     // Persist the regID - no need to register again.
                     storeRegistrationId(context, regID);
-                } catch (IOException ex) {
-                    msg = "Error :" + ex.getMessage();
+                } catch (IOException e) {
+                    msg = "Error :" + e.getMessage();
+                    Timber.e(e, "Error while registering");
                     /* TODO: If there is an error, don't just keep trying to register.
                      * Ask the user to click a button again, or perform exponential back-off. */
                 }
@@ -174,7 +178,7 @@ public class MainActivity extends Activity {
                 ClipboardManager clipBoard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText(REGID_CLIP, regID);
                 clipBoard.setPrimaryClip(clip);
-
+                Timber.d("Registration ID = " + regID);
                 Toast.makeText(this, "Copied Registration ID", Toast.LENGTH_SHORT).show();
             } else if (view == findViewById(R.id.button_mail_regid)) {
                 Intent emailIntent = new Intent(Intent.ACTION_SENDTO);

@@ -16,7 +16,7 @@ import android.net.Uri;
 
 /* Opens the received link in browser and cancels the notification */
 public class BrowserService extends IntentService {
-    //public static final String TAG = "BrowserService";
+
     public static final String MSG_BODY = "com.atekihcan.msgBody";
     public static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
     public static int notificationID = 42;

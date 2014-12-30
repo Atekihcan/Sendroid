@@ -32,13 +32,12 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.widget.Toast;
+
+import timber.log.Timber;
 
 /* Downloads image from the notification creates by NotificationHandleService */
 public class ImageDownloadService extends IntentService {
-
-    public static final String TAG = "ImageDownloadService";
 
     private static final String MSG_BODY = "com.atekihcan.msgBody";
     private static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
@@ -58,10 +57,19 @@ public class ImageDownloadService extends IntentService {
     Date now = new Date();
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        }
+    }
+
+    @Override
     protected void onHandleIntent(Intent intent) {
         final String imageURL = intent.getStringExtra(MSG_BODY);
         notificationID = intent.getIntExtra(NOTIFICATION_ID, 42);
-        Log.i(TAG, "Image : " + imageURL);
+        Timber.d("Image : " + imageURL);
 
         DownloadFile downloadFile = new DownloadFile();
         downloadFile.execute(imageURL);
@@ -87,7 +95,7 @@ public class ImageDownloadService extends IntentService {
         @Override
         protected String doInBackground(String... sUrl) {
             if (!isNetworkAvailable()) {
-                Log.w(TAG, "Cannot connect to network");
+                Timber.d("Cannot connect to network");
                 mBuilder.setContentText("You are not connected to internet. Try again later.");
                 mNotificationManager.notify(notificationID, mBuilder.build());
                 Handler uiHandler =
@@ -119,7 +127,7 @@ public class ImageDownloadService extends IntentService {
                     try {
                         imageDir.mkdirs();
                     } catch (Exception e) {
-                        Log.w(TAG, e.toString() + " (Cannot create directory)");
+                        Timber.e(e, "Cannot create directory");
                     }
                 }
 
@@ -131,7 +139,7 @@ public class ImageDownloadService extends IntentService {
                 try {
                     file.createNewFile();
                 } catch (Exception e) {
-                    Log.w(TAG, e.toString() + " (Cannot create file)");
+                    Timber.e(e, "Cannot create file");
                     mBuilder.setContentText("Cannot access SD card.");
                     mNotificationManager.notify(notificationID, mBuilder.build());
                     Handler uiHandler =
@@ -216,8 +224,8 @@ public class ImageDownloadService extends IntentService {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(ImageDownloadService.this)
                         .setSmallIcon(R.drawable.ic_stat)
-                        .setContentTitle("Download Complete")
-                        .setContentText("Touch to share image")
+                        .setContentTitle("Image Download Complete")
+                        .setContentText("Touch to share")
                         .setProgress(0, 0, false)
                         .setOngoing(false)
                         .setLargeIcon(bitmap)
