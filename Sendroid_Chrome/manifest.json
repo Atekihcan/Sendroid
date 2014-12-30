@@ -3,7 +3,7 @@
     "short_name": "Sendroid",
 	"description": "Easily share text or link from browser to android device.",
 	"author": "Atekihcan <com.atekihcan@gmail.com>",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"icons": {
 		"16": "data/assets/logo_16.png",
 		"32": "data/assets/logo_32.png",
@@ -19,7 +19,7 @@
         "https://*/*"
 	],
 	"background": {
-		"persistent": false,
+		"persistent": true,
 		"scripts": ["main.js"]
 	},
 	"browser_action": {

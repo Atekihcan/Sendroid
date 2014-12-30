@@ -140,10 +140,18 @@ function checkContext(info, tab) {
 function createAndSendMessage() {	
 	/* restrict message body length to 2048 characters */
 	if (sendroidData.body.length > 2048) {
-		console.log("You can't send more than 2048 characters");
-		sendroidNotify("Message is too long", 
-			"Remember Sendroid cannot send more than 2048 characters.",
-			false);
+		if (sendroidData.type === "img") {
+			console.log("Base-64 Image");
+			sendroidNotify("Unsupported Image Format", 
+				"Sorry! Base-64 encoded image is not supported by Sendroid.",
+				false);
+
+		} else {
+			console.log("You can't send more than 2048 characters");
+			sendroidNotify("Message is too long", 
+				"Remember Sendroid cannot send more than 2048 characters.",
+				false);
+		}
 		return;
 	}
 	
@@ -244,6 +252,7 @@ function handleSendSuccess(resJSON) {
 				console.log("Accessing Storage for updating regid");
 				result.sendroidDB[toDevice].regid = 
 						resJSON.results[0].registration_id;
+				result.sendroidDB[toDevice].status = 1;
 				chrome.storage.local.set(
 					{ "sendroidDB": result.sendroidDB }, 
 					function() {
