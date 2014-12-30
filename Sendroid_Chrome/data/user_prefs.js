@@ -46,7 +46,7 @@ function onEdit(deviceID) {
 	/* set update flags */
 	updateID =  deviceID;
 	updateDevice = true;
-	chrome.storage.local.get("sendroidDB", function(result) {
+	chrome.storage.sync.get("sendroidDB", function(result) {
 		nameArea.value = result.sendroidDB[deviceID].name;
 		regidArea.value = result.sendroidDB[deviceID].regid;
 	});
@@ -69,8 +69,8 @@ function onDelete(deviceID) {
 		});
 
 	/* dummy read-write acces for synchronization */
-	chrome.storage.local.get("sendroidDB", function(result) {
-		chrome.storage.local.set(
+	chrome.storage.sync.get("sendroidDB", function(result) {
+		chrome.storage.sync.set(
 			{ "sendroidDB": result.sendroidDB }, 
 			function() {
 				console.log("[cs] : dummy read-write");
@@ -95,7 +95,7 @@ function showUserPrefs() {
 		t_name.style.display = "none";
 	}
 	
-	chrome.storage.local.get("sendroidDB", function(result) {
+	chrome.storage.sync.get("sendroidDB", function(result) {
 		/* update the table fields with proper values */
 		if (result.sendroidDB.length > 0) {
 			deviceList.style.display = "table";
@@ -176,8 +176,8 @@ saveButton.addEventListener('click', function onClick() {
 		}
 
 		/* dummy read-write acces for synchronization */
-		chrome.storage.local.get("sendroidDB", function(result) {
-			chrome.storage.local.set(
+		chrome.storage.sync.get("sendroidDB", function(result) {
+			chrome.storage.sync.set(
 				{ "sendroidDB": result.sendroidDB }, 
 					function() {
 					console.log("[cs] : dummy read-write");

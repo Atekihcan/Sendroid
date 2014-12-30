@@ -6,26 +6,26 @@ var APP_ICON_64 = "data/assets/logo_64.png";
 var GCM_API_KEY = "GCM_API_KEY";
 
 /* checking storage */
-var devices = chrome.storage.local.get("sendroidDB", function() {
+chrome.storage.sync.get("sendroidDB", function(result) {
 	console.log("Accessing Storage");
+
+	if (typeof result.sendroidDB === "undefined") {
+		devices = [];
+		
+		chrome.storage.sync.set({ "sendroidDB": devices }, function() {
+			console.log("Saving Storage");
+		});
+	}
 });
 
-if (!devices) {
-	devices = [];
-	
-	chrome.storage.local.set({ "sendroidDB": devices }, function() {
-		console.log("Saving Storage");
-	});
-}
-
 /****************************************************************************/
-/*					Hnadling UI for user preferences						*/
+/*					Handling UI for user preferences						*/
 /****************************************************************************/
 
 /* listens to device information changes and updates storage */
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
-		chrome.storage.local.get("sendroidDB", function(result) {
+		chrome.storage.sync.get("sendroidDB", function(result) {
 			if (request.type == "delete") {
 				console.log("Deleting device_" + request.id);
 				result.sendroidDB.splice(request.id, 1);
@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener(
 				result.sendroidDB[request.id].regid = request.device.regid;
 				result.sendroidDB[request.id].status = request.device.status;
 			}
-			chrome.storage.local.set(
+			chrome.storage.sync.set(
 				{ "sendroidDB": result.sendroidDB }, 
 				function() {
 					console.log("[storage] : saving after modification");
@@ -64,7 +64,7 @@ function sendroidNotify(error, body, showUserPref) {
 /*			Creating context menus and sending data to GCM server			*/
 /****************************************************************************/
 /* create context menu tree at install time */
-chrome.runtime.onInstalled.addListener(function() {
+chrome.runtime.onStartup.addListener(function() {
 	updateContextMenu();
 });
 
@@ -79,7 +79,7 @@ function updateContextMenu () {
 	});
 
 	/* repopulate the menu using device list from storage */
-	chrome.storage.local.get("sendroidDB", function(result) {
+	chrome.storage.sync.get("sendroidDB", function(result) {
 		console.log("Creating context menu item list.");
 		for (var i = 0; i < result.sendroidDB.length; i++) {
 			chrome.contextMenus.create({
@@ -161,7 +161,7 @@ function createAndSendMessage() {
 	/* if everything is okay proceed with message creation */
 	console.log(sendroidData.type + " : " + sendroidData.body.substring(0, 64));
 
-	chrome.storage.local.get("sendroidDB", function(result) {
+	chrome.storage.sync.get("sendroidDB", function(result) {
 			var sendroidMessage = JSON.stringify({
 			time_to_live: 60,			/* message life in GCM server */
 			delay_while_idle: false,	/* T = wait | F = deliver immediately */
@@ -207,10 +207,10 @@ function handleResponse(response) {
 		} else {
 			console.log("Everything is awesome");
 			/* everything is okay, so update device status in storage */
-			chrome.storage.local.get("sendroidDB", function(result) {
+			chrome.storage.sync.get("sendroidDB", function(result) {
 				console.log("Accessing Storage for updating status");
 				result.sendroidDB[toDevice].status = 1;
-				chrome.storage.local.set(
+				chrome.storage.sync.set(
 					{ "sendroidDB": result.sendroidDB }, 
 					function() {
 						console.log("Saving Storage after updating status");
@@ -247,13 +247,13 @@ function handleSendSuccess(resJSON) {
 			console.log("Info : Updating registration ID");
 			/* FUTURE : should we notify the user? */
 			/* device registration id has changed in the server
-			 * update it in local Sendroid storage too */
-			chrome.storage.local.get("sendroidDB", function(result) {
+			 * update it in sync Sendroid storage too */
+			chrome.storage.sync.get("sendroidDB", function(result) {
 				console.log("Accessing Storage for updating regid");
 				result.sendroidDB[toDevice].regid = 
 						resJSON.results[0].registration_id;
 				result.sendroidDB[toDevice].status = 1;
-				chrome.storage.local.set(
+				chrome.storage.sync.set(
 					{ "sendroidDB": result.sendroidDB }, 
 					function() {
 						console.log("Saving Storage after updating regid");
@@ -268,7 +268,7 @@ function handleSendSuccess(resJSON) {
 				false);
 		} else if (resJSON.results[0].error === "NotRegistered") {
 			console.log("Info : Device not registered. Removing device");
-			chrome.storage.local.get("sendroidDB", function(result) {
+			chrome.storage.sync.get("sendroidDB", function(result) {
 				console.log("Accessing Storage for NotRegistered");
 				sendroidNotify("Unregistered Device", 
 					"It seems " + result.sendroidDB[toDevice].name + 
@@ -278,7 +278,7 @@ function handleSendSuccess(resJSON) {
 					"from Sendroid Chrome database for now.",
 					false);
 				result.sendroidDB.splice(toDevice, 1);
-				chrome.storage.local.set(
+				chrome.storage.sync.set(
 					{ "sendroidDB": result.sendroidDB }, 
 					function() {
 						console.log("Saving Storage after NotRegistered");
@@ -286,14 +286,14 @@ function handleSendSuccess(resJSON) {
 			});
 		} else if (resJSON.results[0].error === "InvalidRegistration") {
 			console.log("Info : Invalid registration. Update required.");
-			chrome.storage.local.get("sendroidDB", function(result) {
+			chrome.storage.sync.get("sendroidDB", function(result) {
 				console.log("Accessing Storage for NotRegistered");
 				sendroidNotify("Invalid registration", 
 					"Registration ID of " + result.sendroidDB[toDevice].name +
 					" is not Valid. Update it in Sendroid Chrome database.", 
 					true);
 				result.sendroidDB[toDevice].status = 0;
-				chrome.storage.local.set(
+				chrome.storage.sync.set(
 					{ "sendroidDB": result.sendroidDB }, 
 					function() {
 						console.log("Saving Storage after NotRegistered");
