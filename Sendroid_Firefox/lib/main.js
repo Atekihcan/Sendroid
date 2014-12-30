@@ -246,10 +246,18 @@ function createAndSendMessage(deviceID) {
 	
 	/* restrict message body length to 2048 characters */
 	if (sendroidData.body.length > 2048) {
-		console.log("You can't send more than 2048 characters");
-		sendroidNotify("Message is too long", 
-			"Remember Sendroid cannot send more than 2048 characters.",
-			false);
+		if (sendroidData.type === "img") {
+			console.log("Base-64 Image");
+			sendroidNotify("Unsupported Image Format", 
+				"Sorry! Base-64 encoded image is not supported by Sendroid.",
+				false);
+
+		} else {
+			console.log("You can't send more than 2048 characters");
+			sendroidNotify("Message is too long", 
+				"Remember Sendroid cannot send more than 2048 characters.",
+				false);
+		}
 		return;
 	}
 	
@@ -335,6 +343,7 @@ function handleSendSuccess(res) {
 			 * update it in local Sendroid storage too */
 			sendroidDB.storage.devices[toDevice].regid = 
 						res.json.results[0].registration_id;
+			sendroidDB.storage.devices[toDevice].status = 1;
 		}
 	} else {
 		if (res.json.results[0].error === "Unavailable") {
