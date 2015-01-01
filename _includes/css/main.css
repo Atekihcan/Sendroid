@@ -59,8 +59,8 @@ img {
 }
 
 hr {
-  margin:60px auto;
-  width:50%;
+  margin: 20px auto;
+  width: 50%;
   border-color: {{ site.colors.black }};
 }
 
@@ -77,6 +77,8 @@ hr {
 .container p, .container ol, .container ul {
   font-size: 17px;
   padding: 0 5%;
+  line-height: 1.2em;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
 }
 .container ol, .container ul { padding: 0 8%; }
 .container p:first-of-type {
@@ -172,8 +174,8 @@ nav ul li:hover, nav ul li.active {
   width:100%;
   min-height:300px;
   padding:210px 0;
-  background:url(img/bgnoise.png);
   /* generated noise from noisetexturegenerator.com */
+  background:url(img/bgnoise.png);
 }
 
 .section:first-of-type {
@@ -273,11 +275,6 @@ nav ul li:hover, nav ul li.active {
 	margin-top: 14px;
 }
 .sectiondivider .text-blue {margin-left:5px !important;}
-
-/* overwriting horizontal rule top/bottom margins */
-hr {
-    margin: 20px auto;
-}
 
 /* for contact form*/
 .contact-form {
