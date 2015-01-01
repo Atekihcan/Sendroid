@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2014-2015. Atekihcan <com.atekihcan@gmail.com>
+  ~
+  ~ Author	: Atekihcan
+  ~ Website	: http://atekihcan.github.io
+  -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.atekihcan.sendroid" >
 
     <!-- Needs internet to use Google Services. -->
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- GCM requires a Google account. -->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-
     <!-- Keeps the processor from sleeping when a message is received. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-
+    <!-- GCM requires a Google account. -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <!-- This app has permission to register and receive data message. -->
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <!-- Needs to check whether network is available before downloading image -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Storage read-write access for saving images -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Permission to set alarm on device reboot -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
-    <!--
-     Creates a custom permission so only this app can receive its messages.
-
-     NOTE: the permission *must* be called PACKAGE.permission.C2D_MESSAGE,
-           where PACKAGE is the application's package name.
-    -->
+    <!-- Creates and uses a custom permission so only this app can receive its messages. -->
     <permission
         android:name="com.atekihcan.sendroid.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
-
     <uses-permission android:name="com.atekihcan.sendroid.permission.C2D_MESSAGE" />
 
-    <!-- This app has permission to register and receive data message. -->
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <application
         android:allowBackup="true"
@@ -51,40 +51,9 @@
             android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!--
-          WakefulBroadcastReceiver that will receive intents from GCM
-          services and hand them to the custom IntentService.
-
-          The com.google.android.c2dm.permission.SEND permission is necessary
-          so only GCM services can send data messages for the app.
-        -->
-        <receiver
-            android:name=".BroadcastReceiver"
-            android:permission="com.google.android.c2dm.permission.SEND" >
-            <intent-filter>
-
-                <!-- Receives the actual messages. -->
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-
-                <category android:name="com.google.android.gcm.demo.app" />
-            </intent-filter>
-        </receiver>
-
-        <service android:name=".NotificationHandleService" />
-        <service android:name=".ImageDownloadService" />
-        <service
-            android:name=".CopyService"
-            android:exported="false" >
-        </service>
-        <service
-            android:name=".BrowserService"
-            android:exported="false" >
-        </service>
 
         <activity
             android:name=".SettingsActivity"
@@ -94,6 +63,33 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.atekihcan.sendroid.MainActivity" />
         </activity>
+
+        <!-- BroadcastReceiver to receive intents from GCM services -->
+        <receiver
+            android:name=".MessageReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <!-- Receives the actual messages. -->
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- BroadcastReceiver to receive device restart intent -->
+        <receiver
+            android:name=".BootCompletedReceiver"
+            android:enabled="false" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+        <!-- Various intent services -->
+        <service android:name=".NotificationHandleService" />
+        <service android:name=".CopyService" />
+        <service android:name=".BrowserService" />
+        <service android:name=".ImageDownloadService" />
+        <service android:name=".ImageCancelService" />
+        <service android:name=".FileDeleteService" />
     </application>
 
 </manifest>

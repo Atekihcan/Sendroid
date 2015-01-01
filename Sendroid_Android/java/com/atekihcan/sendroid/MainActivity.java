@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014. Atekihcan <com.atekihcan@gmail.com>
+ * Copyright (c) 2014-2015. Atekihcan <com.atekihcan@gmail.com>
  *
  * Author	: Atekihcan
  * Website	: http://atekihcan.github.io
@@ -12,6 +12,8 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -78,6 +80,22 @@ public class MainActivity extends Activity {
             }
         } else {
             Timber.d("No valid Google Play Services APK found.");
+        }
+
+        // Set an alarm for deleting downloaded files
+        try {
+            Intent deleteIntent = new Intent(this, FileDeleteService.class);
+            PendingIntent pendingDeleteIntent = PendingIntent.getService(this, 0,
+                                            deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+            AlarmManager deleteManager = (AlarmManager)getSystemService(Activity.ALARM_SERVICE);
+
+            // Fires inexact alarm once in a day
+            deleteManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
+                                              AlarmManager.INTERVAL_DAY, pendingDeleteIntent);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

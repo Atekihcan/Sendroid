@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (c) 2014. Atekihcan <com.atekihcan@gmail.com>
+  ~ Copyright (c) 2014-2015. Atekihcan <com.atekihcan@gmail.com>
   ~
   ~ Author	: Atekihcan
   ~ Website	: http://atekihcan.github.io
@@ -22,5 +22,22 @@
         <item>com.bsb.hike</item>
         <item>com.whatsapp</item>
         <item>Not Set</item>
+    </string-array>
+
+    <string-array name="listDeleteAfter">
+        <item>Older than an hour</item>
+        <item>Older than 12 hours</item>
+        <item>Older than a day</item>
+        <item>Older than 2 days</item>
+        <item>Older than a week</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="listDeleteAfterValues">
+        <item>60</item>
+        <item>720</item>
+        <item>1440</item>
+        <item>2880</item>
+        <item>10080</item>
+        <item>Never</item>
     </string-array>
 </resources>

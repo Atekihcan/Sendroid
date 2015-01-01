@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014. Atekihcan <com.atekihcan@gmail.com>
+ * Copyright (c) 2014-2015. Atekihcan <com.atekihcan@gmail.com>
  *
  * Author	: Atekihcan
  * Website	: http://atekihcan.github.io
@@ -28,7 +28,7 @@ import android.widget.Toast;
 import timber.log.Timber;
 
 /**
- * Does the actual handling of the GCM message. BroadcastReceiver holds a
+ * Does the actual handling of the GCM message. MessageReceiver holds a
  * partial wake lock for this service while the service does its work. When the
  * service is finished, it releases the wake lock.
  */
@@ -101,7 +101,7 @@ public class NotificationHandleService extends IntentService {
             }
         }
         // Release the wake lock provided by the WakefulBroadcastReceiver.
-        BroadcastReceiver.completeWakefulIntent(intent);
+        MessageReceiver.completeWakefulIntent(intent);
     }
 
     /* Handles the message by showing a notification with actions */
@@ -117,80 +117,92 @@ public class NotificationHandleService extends IntentService {
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Boolean DEFAULT_COPY =
-                prefs.getBoolean(getResources().getString(R.string.prefs_copy_key), false);
+        Boolean AUTO_COPY =
+                prefs.getBoolean(getResources().getString(R.string.prefs_auto_copy_key), false);
+        Boolean AUTO_DOWNLOAD =
+                prefs.getBoolean(getResources().getString(R.string.prefs_auto_download_key), false);
         String DEFAULT_SHARING_APP =
-                prefs.getString(getResources().getString(R.string.prefs_share_key),
-                                      getResources().getString(R.string.prefs_package_default));
+                prefs.getString(getResources().getString(R.string.prefs_default_share_key),
+                        getResources().getString(R.string.prefs_package_default));
 
-        // If default copy is on, put the message body in clipboard
-        if (DEFAULT_COPY) {
+        // If automatic copy is on, put the message body in clipboard
+        if (AUTO_COPY) {
             ClipboardManager clipBoard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText(CLIP, body);
             clipBoard.setPrimaryClip(clip);
         }
 
-        // Create notification
-        NotificationManager mNotificationManager = (NotificationManager)
-                this.getSystemService(Context.NOTIFICATION_SERVICE);
+        // If automatic image download is on, start image download service
+        if (type.equals("img") && AUTO_DOWNLOAD) {
+            Intent imageDownloadIntent = new Intent(this, ImageDownloadService.class);
+            imageDownloadIntent.putExtra(MSG_BODY, body);
+            imageDownloadIntent.putExtra(NOTIFICATION_ID, id);
 
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, body);
+            startService(imageDownloadIntent);
+        } else {
+            // Create notification
+            NotificationManager mNotificationManager = (NotificationManager)
+                    this.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // If default sharing app is set, use that
-        if (!DEFAULT_SHARING_APP.equals(getResources().getString(R.string.prefs_package_default))) {
-            shareIntent.setPackage(DEFAULT_SHARING_APP);
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, body);
+
+            // If default sharing app is set, use that
+            if (!DEFAULT_SHARING_APP.equals(getResources().getString(R.string.prefs_package_default))) {
+                shareIntent.setPackage(DEFAULT_SHARING_APP);
+            }
+
+            PendingIntent pendingShareIntent = PendingIntent.getActivity(this, id,
+                    Intent.createChooser(shareIntent, "Share " + msgType + " with..."), 0);
+
+            Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+
+            NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(this)
+                            .setSmallIcon(R.drawable.ic_stat)
+                            .setLargeIcon(largeIcon)
+                            .setTicker("Received " + msgType)
+                            .setContentTitle("Received " + msgType)
+                            .setContentText("Touch to share")
+                            .setAutoCancel(true)
+                            .setStyle(new NotificationCompat.BigTextStyle()
+                                    .bigText(body)
+                                    .setSummaryText("Touch to share"));
+
+            mBuilder.setContentIntent(pendingShareIntent);
+
+            Intent copyIntent = new Intent(this, CopyService.class);
+            copyIntent.putExtra(MSG_BODY, body);
+            copyIntent.putExtra(NOTIFICATION_ID, id);
+            PendingIntent pendingCopyIntent = PendingIntent.getService(this, id, copyIntent, 0);
+            mBuilder.addAction(R.drawable.ic_action_copy, "Copy", pendingCopyIntent);
+
+
+            if (type.equals("img") || type.equals("url")) {
+                Intent browserIntent = new Intent(this, BrowserService.class);
+                browserIntent.putExtra(MSG_BODY, body);
+                browserIntent.putExtra(NOTIFICATION_ID, id);
+
+                PendingIntent pendingBrowserIntent = PendingIntent.getService(this, id,
+                        browserIntent, 0);
+
+                mBuilder.addAction(R.drawable.ic_action_browser, "Open",
+                        pendingBrowserIntent);
+            }
+
+            if (type.equals("img")) {
+                Intent imageDownloadIntent = new Intent(this, ImageDownloadService.class);
+                imageDownloadIntent.putExtra(MSG_BODY, body);
+                imageDownloadIntent.putExtra(NOTIFICATION_ID, id);
+                PendingIntent pendingImageSaveIntent = PendingIntent.getService(this, id,
+                        imageDownloadIntent, 0);
+
+                mBuilder.addAction(R.drawable.ic_action_download, "Download",
+                        pendingImageSaveIntent);
+            }
+
+            mNotificationManager.notify(id, mBuilder.build());
         }
-		
-        PendingIntent pendingShareIntent = PendingIntent.getActivity(this, id,
-                Intent.createChooser(shareIntent, "Share " + msgType + " with..."), 0);
-
-        Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.ic_stat)
-                    .setLargeIcon(largeIcon)
-                    .setContentTitle("Received " + msgType)
-                    .setContentText("Touch to share")
-                    .setAutoCancel(true)
-                    .setStyle(new NotificationCompat.BigTextStyle()
-                                                    .bigText(body)
-                                                    .setSummaryText("Touch to share"));
-
-        mBuilder.setContentIntent(pendingShareIntent);
-
-        Intent copyIntent = new Intent(this, CopyService.class);
-        copyIntent.putExtra(MSG_BODY, body);
-        copyIntent.putExtra(NOTIFICATION_ID, id);
-        PendingIntent pendingCopyIntent = PendingIntent.getService(this, id, copyIntent, 0);
-        mBuilder.addAction(R.drawable.ic_action_copy, "Copy", pendingCopyIntent);
-
-
-        if (type.equals("img") || type.equals("url")) {
-            Intent browserIntent = new Intent(this, BrowserService.class);
-            browserIntent.putExtra(MSG_BODY, body);
-            browserIntent.putExtra(NOTIFICATION_ID, id);
-
-            PendingIntent pendingBrowserIntent = PendingIntent.getService(this, id,
-                    browserIntent, 0);
-
-            mBuilder.addAction(R.drawable.ic_action_browser, "Open",
-                    pendingBrowserIntent);
-        }
-
-        if (type.equals("img")) {
-            Intent imageSaveIntent = new Intent(this, ImageDownloadService.class);
-            imageSaveIntent.putExtra(MSG_BODY, body);
-            imageSaveIntent.putExtra(NOTIFICATION_ID, id);
-            PendingIntent pendingImageSaveIntent = PendingIntent.getService(this, id,
-                    imageSaveIntent, 0);
-
-            mBuilder.addAction(R.drawable.ic_action_download, "Download",
-                    pendingImageSaveIntent);
-        }
-
-        mNotificationManager.notify(id, mBuilder.build());
     }
 }

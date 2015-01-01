@@ -23,14 +23,25 @@
     <string name="action_feedback">Feedback</string>
     <string name="action_help">Help</string>
 
-    <string name="prefs_copy_key">prefs_copy</string>
-    <string name="prefs_share_key">prefs_share</string>
-    <string name="prefs_image_key">prefs_image</string>
-    <string name="prefs_copy_title">Copy Received Message Automatically</string>
-    <string name="prefs_share_title">Default Sharing Application</string>
-    <string name="prefs_image_title">Default Image Sharing Application</string>
+    <string name="prefs_auto_copy_key">prefs_copy</string>
+    <string name="prefs_auto_download_key">prefs_copy</string>
+    <string name="prefs_auto_delete_key">prefs_delete</string>
+    <string name="prefs_default_share_key">prefs_share</string>
+    <string name="prefs_default_image_key">prefs_image</string>
+
+    <string name="prefs_auto_copy_title">Copy Messages</string>
+    <string name="prefs_auto_download_title">Download Images</string>
+    <string name="prefs_auto_delete_title">Automatically Delete Files</string>
+    <string name="prefs_default_share_title">Default Sharing Application</string>
+    <string name="prefs_default_image_title">Default Image Sharing Application</string>
+
+    <string name="prefs_auto_copy_desc">Automatically copy received message</string>
+    <string name="prefs_auto_download_desc">Automatically download image from image link</string>
+
     <string name="prefs_share_dialog">Select Default Sharing Application</string>
     <string name="prefs_image_dialog">Select Default Image Sharing Application</string>
+
     <string name="prefs_package_default">Not Set</string>
+    <string name="prefs_delete_default">Never</string>
 
 </resources>

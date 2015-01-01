@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014. Atekihcan <com.atekihcan@gmail.com>
+ * Copyright (c) 2014-2015. Atekihcan <com.atekihcan@gmail.com>
  *
  * Author	: Atekihcan
  * Website	: http://atekihcan.github.io
@@ -20,7 +20,7 @@ import android.support.v4.content.WakefulBroadcastReceiver;
  * that the device does not go back to sleep in the transition.
  */
 
-public class BroadcastReceiver extends WakefulBroadcastReceiver {
+public class MessageReceiver extends WakefulBroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
