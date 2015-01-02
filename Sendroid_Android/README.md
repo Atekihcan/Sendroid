@@ -2,6 +2,11 @@
 
 ### Changelist
 ---
+#### Version 1.1.1
+* Option to open image in browser even when download is going on
+* Removing closing notification panel on image download cancel
+* Fixing automatic copy and download image checkbox mirroring in settings
+
 #### Version 1.1.0
 * Option to download images automatically
 * Option to setup automatic deletion of downloaded images

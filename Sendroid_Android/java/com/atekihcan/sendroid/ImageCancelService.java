@@ -37,7 +37,6 @@ public class ImageCancelService extends IntentService {
             Timber.d("Cancelling download");
             ImageDownloadService.CANCEL_DOWNLOAD = true;
             mNotificationManager.cancel(notificationID);
-            sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
         }
     }
 }

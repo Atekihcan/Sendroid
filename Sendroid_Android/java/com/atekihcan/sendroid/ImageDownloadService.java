@@ -97,7 +97,16 @@ public class ImageDownloadService extends IntentService {
         PendingIntent pendingCancelIntent =
                 PendingIntent.getService(this, notificationID, cancelIntent,
                                          PendingIntent.FLAG_CANCEL_CURRENT);
-        mBuilder.addAction(R.drawable.ic_action_cancel, "Cancel Download", pendingCancelIntent);
+        mBuilder.addAction(R.drawable.ic_action_cancel, "Cancel", pendingCancelIntent);
+
+        // Open in browser action, in case download doesn't start or stops
+
+        Intent browserIntent = new Intent(this, BrowserService.class);
+        browserIntent.putExtra(MSG_BODY, imageURL);
+        browserIntent.putExtra(NOTIFICATION_ID, notificationID);
+        PendingIntent pendingBrowserIntent =
+                PendingIntent.getService(this, notificationID, browserIntent, 0);
+        mBuilder.addAction(R.drawable.ic_action_browser, "Open", pendingBrowserIntent);
 
         mNotificationManager.notify(notificationID, mBuilder.build());
 
@@ -157,6 +166,7 @@ public class ImageDownloadService extends IntentService {
                 connection.setReadTimeout(5000);
                 connection.connect();
 
+                Timber.d("Connected");
                 int fileLength = connection.getContentLength();
                 InputStream input = new BufferedInputStream(url.openStream());
                 FileOutputStream output = new FileOutputStream(imageOutputFile);
