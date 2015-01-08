@@ -2,6 +2,14 @@
 
 ### Changelist
 ---
+#### Version 1.1.2
+* Fixing image download
+* Queued multiple download
+* Showing image file size in notification
+* Open in browser while downloading cancels download
+* Downloaded images show up in gallery
+* Converting public fields to private/protected
+
 #### Version 1.1.1
 * Option to open image in browser even when download is going on
 * Removing closing notification panel on image download cancel

@@ -10,6 +10,7 @@ package com.atekihcan.sendroid;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 
@@ -50,7 +51,9 @@ public class FileDeleteService extends IntentService {
                     Long lastModified = f.lastModified();
                     if (lastModified + MAX_AGE < System.currentTimeMillis()) {
                         Timber.d("Deleting " + f.getName());
+                        Uri fileUri = Uri.fromFile(f);
                         f.delete();
+                        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, fileUri));
                     }
                 }
             }

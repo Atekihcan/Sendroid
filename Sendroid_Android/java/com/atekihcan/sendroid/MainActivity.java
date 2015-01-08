@@ -40,13 +40,13 @@ import timber.log.Timber;
 /* Creates main and only UI of the application and creates and stores GCM registration ID */
 public class MainActivity extends Activity {
 
-    public static final String REGID_CLIP = "com.atekihcan.regidClip";
-    public static final String REGISTRATION_ID = "com.atekihcan.registrationID";
+    private static final String REGID_CLIP = "com.atekihcan.regidClip";
+    private static final String REGISTRATION_ID = "com.atekihcan.registrationID";
 
     private static final String APP_VERSION = "com.atekihcan.appVersion";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    String SENDER_ID = "GCM_SENDER_KEY";
+    String SENDER_ID = "1092992570314";
 
     String regID;
     Context context;
@@ -90,7 +90,7 @@ public class MainActivity extends Activity {
 
             AlarmManager deleteManager = (AlarmManager)getSystemService(Activity.ALARM_SERVICE);
 
-            // Fires inexact alarm once in a day
+            // Fires inexact alarm once a day
             deleteManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
                                               AlarmManager.INTERVAL_DAY, pendingDeleteIntent);
 
@@ -259,7 +259,6 @@ public class MainActivity extends Activity {
                         getResources().getString(R.string.app_name)
                                 + " Feedback");
                 startActivity(emailIntent);
-                finish();
                 return true;
             case R.id.action_help:
                 // Open browser to show help page
@@ -267,7 +266,6 @@ public class MainActivity extends Activity {
                 helpIntent.setData(Uri.parse("http://atekihcan.github.io/Sendroid/#why"));
                 helpIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(helpIntent);
-                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

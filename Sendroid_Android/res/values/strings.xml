@@ -41,7 +41,7 @@
     <string name="prefs_share_dialog">Select Default Sharing Application</string>
     <string name="prefs_image_dialog">Select Default Image Sharing Application</string>
 
-    <string name="prefs_package_default">Not Set</string>
+    <string name="prefs_package_default">None</string>
     <string name="prefs_delete_default">Never</string>
 
 </resources>

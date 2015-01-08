@@ -13,7 +13,7 @@
         <item>Hangout</item>
         <item>Hike</item>
         <item>Whatsapp</item>
-        <item>Not Set</item>
+        <item>None</item>
     </string-array>
     <string-array name="listDefaultShareValues">
         <item>com.facebook.katana</item>
@@ -21,7 +21,7 @@
         <item>com.google.android.talk</item>
         <item>com.bsb.hike</item>
         <item>com.whatsapp</item>
-        <item>Not Set</item>
+        <item>None</item>
     </string-array>
 
     <string-array name="listDeleteAfter">

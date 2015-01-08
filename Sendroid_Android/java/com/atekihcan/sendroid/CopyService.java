@@ -17,10 +17,9 @@ import android.content.Context;
 /* Puts content of notification into clipboard */
 public class CopyService extends IntentService {
 
-    public static final String CLIP = "com.atekihcan.clip";
-    public static final String MSG_BODY = "com.atekihcan.msgBody";
-    public static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
-    public static int notificationID = 42;
+    private static final String CLIP = "com.atekihcan.clip";
+    private static final String MSG_BODY = "com.atekihcan.msgBody";
+    private static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
 
     public CopyService() {
         super("CopyService");
@@ -29,11 +28,11 @@ public class CopyService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         String msg = (String) intent.getExtras().get(MSG_BODY);
-        notificationID = intent.getIntExtra(NOTIFICATION_ID, 42);
+        int notificationID = intent.getIntExtra(NOTIFICATION_ID, 42);
 
         // Cancel the notification
-        NotificationManager mNotificationManager = (NotificationManager)
-                CopyService.this.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager mNotificationManager =
+                (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(notificationID);
 
         // Close the notification panel

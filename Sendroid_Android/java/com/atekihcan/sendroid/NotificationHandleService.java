@@ -34,9 +34,9 @@ import timber.log.Timber;
  */
 public class NotificationHandleService extends IntentService {
 
-    public static final String CLIP = "com.atekihcan.clip";
-    public static final String MSG_BODY = "com.atekihcan.msgBody";
-    public static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
+    private static final String CLIP = "com.atekihcan.clip";
+    private static final String MSG_BODY = "com.atekihcan.msgBody";
+    private static final String NOTIFICATION_ID = "com.atekihcan.notificationID";
 
     public NotificationHandleService() {
         super("NotificationHandleService");
@@ -116,6 +116,7 @@ public class NotificationHandleService extends IntentService {
             msgType = "link";
         }
 
+        // Get user preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Boolean AUTO_COPY =
                 prefs.getBoolean(getResources().getString(R.string.prefs_auto_copy_key), false);
@@ -172,13 +173,14 @@ public class NotificationHandleService extends IntentService {
 
             mBuilder.setContentIntent(pendingShareIntent);
 
+            // Add action button for copy
             Intent copyIntent = new Intent(this, CopyService.class);
             copyIntent.putExtra(MSG_BODY, body);
             copyIntent.putExtra(NOTIFICATION_ID, id);
             PendingIntent pendingCopyIntent = PendingIntent.getService(this, id, copyIntent, 0);
             mBuilder.addAction(R.drawable.ic_action_copy, "Copy", pendingCopyIntent);
 
-
+            // If URL is received, add action button for opening in browser
             if (type.equals("img") || type.equals("url")) {
                 Intent browserIntent = new Intent(this, BrowserService.class);
                 browserIntent.putExtra(MSG_BODY, body);
@@ -191,6 +193,7 @@ public class NotificationHandleService extends IntentService {
                         pendingBrowserIntent);
             }
 
+            // If image URL is received, add action button for image download
             if (type.equals("img")) {
                 Intent imageDownloadIntent = new Intent(this, ImageDownloadService.class);
                 imageDownloadIntent.putExtra(MSG_BODY, body);

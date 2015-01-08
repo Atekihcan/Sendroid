@@ -26,11 +26,20 @@ public class ImageCancelService extends IntentService {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        }
+    }
+
+    @Override
     protected void onHandleIntent(Intent intent) {
         String actionType = (String) intent.getExtras().get(NOTIFICATION_ACTION);
         int notificationID = intent.getIntExtra(NOTIFICATION_ID, 42);
-        NotificationManager mNotificationManager = (NotificationManager) ImageCancelService.this
-                                                    .getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager mNotificationManager =
+                (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Notify download service and cancel notification
         if (actionType.equals(DOWNLOAD_CANCEL)) {

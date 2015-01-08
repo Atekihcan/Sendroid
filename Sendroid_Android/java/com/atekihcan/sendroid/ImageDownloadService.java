@@ -11,8 +11,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -27,7 +27,6 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
@@ -47,14 +46,11 @@ public class ImageDownloadService extends IntentService {
     private static NotificationCompat.Builder mBuilder;
     private NotificationManager mNotificationManager;
 
-    public static Boolean CANCEL_DOWNLOAD = false;
+    protected static Boolean CANCEL_DOWNLOAD = false;
 
     public ImageDownloadService() {
         super("ImageDownloadService");
     }
-
-    SimpleDateFormat date = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
-    Date now = new Date();
 
     private static String filePath = Environment.getExternalStorageDirectory().getPath();
     private static File imageOutputFile;
@@ -92,8 +88,8 @@ public class ImageDownloadService extends IntentService {
 
         // Create cancel action
         Intent cancelIntent = new Intent(this, ImageCancelService.class);
-        cancelIntent.putExtra(NOTIFICATION_ACTION, DOWNLOAD_CANCEL);
         cancelIntent.putExtra(NOTIFICATION_ID, notificationID);
+        cancelIntent.putExtra(NOTIFICATION_ACTION, DOWNLOAD_CANCEL);
         PendingIntent pendingCancelIntent =
                 PendingIntent.getService(this, notificationID, cancelIntent,
                                          PendingIntent.FLAG_CANCEL_CURRENT);
@@ -104,6 +100,7 @@ public class ImageDownloadService extends IntentService {
         Intent browserIntent = new Intent(this, BrowserService.class);
         browserIntent.putExtra(MSG_BODY, imageURL);
         browserIntent.putExtra(NOTIFICATION_ID, notificationID);
+        cancelIntent.putExtra(NOTIFICATION_ACTION, DOWNLOAD_CANCEL);
         PendingIntent pendingBrowserIntent =
                 PendingIntent.getService(this, notificationID, browserIntent, 0);
         mBuilder.addAction(R.drawable.ic_action_browser, "Open", pendingBrowserIntent);
@@ -123,91 +120,99 @@ public class ImageDownloadService extends IntentService {
                 }
             }
 
+            SimpleDateFormat date = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+            Date now = new Date();
+
             filePath =  Environment.getExternalStorageDirectory().getPath()
-                    + "/" + getResources().getString(R.string.app_name)
-                    + "/image_" + date.format(now) + ".jpg";
+                                    + "/" + getResources().getString(R.string.app_name)
+                                    + "/image_" + date.format(now) + ".jpg";
 
             imageOutputFile = new File(filePath);
 
             // Proceed only if file creation is successful
             try {
                 Boolean fileCreated = imageOutputFile.createNewFile();
-
-                // Start download async task
                 if (fileCreated) {
-                    DownloadFile downloadFile = new DownloadFile();
-                    downloadFile.execute(imageURL);
+                    DownloadFile(new URL(imageURL));
                 }
             } catch (Exception e) {
                 Timber.e(e, "Cannot create file");
-                mBuilder.setContentTitle("Cannot access SD card")
-                        .setContentText("Try again later.");
-                mNotificationManager.notify(notificationID, mBuilder.build());
+                notifyImageDownloadFailed("Cannot access SD card");
             }
         } else {
             Timber.d("Cannot connect to network");
-            mBuilder.setContentTitle("Network not found")
-                    .setContentText("Try again later.");
-            mNotificationManager.notify(notificationID, mBuilder.build());
+            notifyImageDownloadFailed("Network not found");
         }
     }
 
-    /* AsyncTask for downloading image */
-    private class DownloadFile extends AsyncTask<String, Integer, String> {
-        @Override
-        protected String doInBackground(String... sUrl) {
-            try {
-                Timber.d("Beginning Download");
-                mBuilder.setContentText("Connecting...");
-                mNotificationManager.notify(notificationID, mBuilder.build());
-                URL url = new URL(sUrl[0]);
-                URLConnection connection = url.openConnection();
-                connection.setConnectTimeout(5000);
-                connection.setReadTimeout(5000);
-                connection.connect();
+    /* Downloads the file located at url */
+    private void DownloadFile (URL url) {
+        try {
+            Timber.d("Starting Download");
+            mBuilder.setContentText("Connecting...");
+            mNotificationManager.notify(notificationID, mBuilder.build());
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            Timber.d("Connection opened with response : " + connection.getResponseMessage());
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            connection.connect();
 
-                Timber.d("Connected");
-                int fileLength = connection.getContentLength();
-                InputStream input = new BufferedInputStream(url.openStream());
-                FileOutputStream output = new FileOutputStream(imageOutputFile);
+            Timber.d("Connected");
+            long fileLength = connection.getContentLength();
+            InputStream input = new BufferedInputStream(url.openStream());
+            FileOutputStream output = new FileOutputStream(imageOutputFile);
 
-                byte data[] = new byte[1024];
-                long total = 0;
-                int count;
-
-                Timber.d("Available : " + input.available());
-                // If stream is not available for reading do not proceed and let the user know
-                while (!CANCEL_DOWNLOAD && input.available() < 1) {
-                    mBuilder.setContentText("Trying to fetch image...");
-                    mNotificationManager.notify(notificationID, mBuilder.build());
-                }
-
-                // If download has not been cancelled, continue reading stream
-                while (!CANCEL_DOWNLOAD && (count = input.read(data)) != -1) {
-                    total += count;
-                    progressChange((int) (total * 100) / fileLength);
-                    output.write(data, 0, count);
-                }
-
-                output.flush();
-                output.close();
-                input.close();
-            } catch (Exception e) {
-                Timber.d(e.getClass().getName() + " happened");
-                mBuilder.setContentTitle("Image Download Failed")
-                        .setContentText("Try again later.");
+            // If fileLength is less than 1, set download progress indeterminate
+            if (fileLength < 1) {
+                mBuilder.setProgress(0, 0, true);
                 mNotificationManager.notify(notificationID, mBuilder.build());
             }
-            return null;
+
+            byte data[] = new byte[1024];
+            long total = 0;
+            int count;
+
+            Timber.d("Stream Opened. Available : " + input.available());
+            // If download has not been cancelled, continue reading stream
+            while (!CANCEL_DOWNLOAD && (count = input.read(data)) != -1) {
+                total += count;
+                if (fileLength > 0) {
+                    progressChange(total, fileLength);
+                }
+                output.write(data, 0, count);
+            }
+
+            output.flush();
+            output.close();
+            input.close();
+
+            // If fileLength is less than 1 and download is complete, notify user
+            if (!CANCEL_DOWNLOAD && fileLength < 1) {
+                notifyImageDownloadComplete();
+            }
+
+            if (CANCEL_DOWNLOAD && imageOutputFile != null) {
+                try {
+                    imageOutputFile.delete();
+                } catch (Exception e) {
+                    Timber.d(e.getClass().getName() + " happened");
+                    e.printStackTrace();
+                }
+            }
+
+        } catch (Exception e) {
+            Timber.d(e.getClass().getName() + " happened");
+            notifyImageDownloadFailed(e.getClass().getSimpleName());
         }
     }
 
     /* Handles progress changed by showing progress bar */
-    void progressChange(int progress){
+    private void progressChange(long done, long fileLength){
+        int progress = (int) (done * 100 / fileLength);
         if (lastUpdate != progress) {
             lastUpdate = progress;
             if (progress < 100) {
-                mBuilder.setContentText("Download in progress..." + progress + "%")
+                mBuilder.setContentText(progress + "% of " + humanReadableByte(fileLength, true))
                         .setProgress(100, progress, false)
                         .setOngoing(true);
                 mNotificationManager.notify(notificationID, mBuilder.build());
@@ -218,13 +223,17 @@ public class ImageDownloadService extends IntentService {
     }
 
     /* When download is complete updates notification with share intent */
-    void notifyImageDownloadComplete() {
+    private void notifyImageDownloadComplete() {
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(ImageDownloadService.this);
 
         String DEFAULT_IMAGE_SHARING_APP = prefs.getString(
                 getResources().getString(R.string.prefs_default_image_key),
                 getResources().getString(R.string.prefs_package_default));
+
+        // Send broadcast to scan file by media
+        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                Uri.fromFile(imageOutputFile)));
 
         // Create notification
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -254,6 +263,14 @@ public class ImageDownloadService extends IntentService {
                         .setAutoCancel(true);
 
         mBuilder.setContentIntent(pendingShareIntent);
+        mNotificationManager.notify(notificationID, mBuilder.build());
+    }
+
+    /* Notify user for image download failed*/
+    private void notifyImageDownloadFailed(String error) {
+        mBuilder.setContentTitle("Image Download Failed")
+                .setContentText("Error : " + error)
+                .setOngoing(false);
         mNotificationManager.notify(notificationID, mBuilder.build());
     }
 
@@ -287,5 +304,14 @@ public class ImageDownloadService extends IntentService {
         }
 
         return null;
+    }
+
+    /* Returns bytes in human-readable format */
+    private static String humanReadableByte(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 }
