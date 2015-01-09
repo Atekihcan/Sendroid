@@ -30,19 +30,15 @@
     <ListPreference
         android:key="@string/prefs_default_share_key"
         android:title="@string/prefs_default_share_title"
-        android:dialogTitle="@string/prefs_share_dialog"
+        android:dialogTitle="@string/prefs_default_share_title"
         android:summary="%s"
-        android:entries="@array/listDefaultShare"
-        android:entryValues="@array/listDefaultShareValues"
         android:defaultValue="@string/prefs_package_default" />
 
     <ListPreference
         android:key="@string/prefs_default_image_key"
         android:title="@string/prefs_default_image_title"
-        android:dialogTitle="@string/prefs_image_dialog"
+        android:dialogTitle="@string/prefs_default_image_title"
         android:summary="%s"
-        android:entries="@array/listDefaultShare"
-        android:entryValues="@array/listDefaultShareValues"
         android:defaultValue="@string/prefs_package_default" />
 
 </PreferenceScreen>

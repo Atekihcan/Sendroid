@@ -32,14 +32,11 @@
     <string name="prefs_auto_copy_title">Copy Messages</string>
     <string name="prefs_auto_download_title">Download Images</string>
     <string name="prefs_auto_delete_title">Automatically Delete Files</string>
-    <string name="prefs_default_share_title">Default Sharing Application</string>
-    <string name="prefs_default_image_title">Default Image Sharing Application</string>
+    <string name="prefs_default_share_title">Default Sharing App</string>
+    <string name="prefs_default_image_title">Default Image Sharing App</string>
 
     <string name="prefs_auto_copy_desc">Automatically copy received message</string>
     <string name="prefs_auto_download_desc">Automatically download image from image link</string>
-
-    <string name="prefs_share_dialog">Select Default Sharing Application</string>
-    <string name="prefs_image_dialog">Select Default Image Sharing Application</string>
 
     <string name="prefs_package_default">None</string>
     <string name="prefs_delete_default">Never</string>

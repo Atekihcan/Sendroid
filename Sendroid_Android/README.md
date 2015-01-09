@@ -2,6 +2,9 @@
 
 ### Changelist
 ---
+#### Version 1.1.3
+* Populating default share list from system
+
 #### Version 1.1.2
 * Fixing image download
 * Queued multiple download

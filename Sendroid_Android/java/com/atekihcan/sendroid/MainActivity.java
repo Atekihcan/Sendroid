@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
     private static final String APP_VERSION = "com.atekihcan.appVersion";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    String SENDER_ID = "1092992570314";
+    String SENDER_ID = "GCM_SENDER_KEY";
 
     String regID;
     Context context;
@@ -82,20 +82,28 @@ public class MainActivity extends Activity {
             Timber.d("No valid Google Play Services APK found.");
         }
 
-        // Set an alarm for deleting downloaded files
-        try {
-            Intent deleteIntent = new Intent(this, FileDeleteService.class);
-            PendingIntent pendingDeleteIntent = PendingIntent.getService(this, 0,
-                                            deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        // Set an alarm for deleting downloaded files only on first run
+        final SharedPreferences prefs =
+                getSharedPreferences(MainActivity.class.getSimpleName(), Context.MODE_PRIVATE);
+        if (prefs.getBoolean("firstRun", true)) {
+            try {
+                Intent deleteIntent = new Intent(this, FileDeleteService.class);
+                PendingIntent pendingDeleteIntent = PendingIntent.getService(this, 0,
+                        deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            AlarmManager deleteManager = (AlarmManager)getSystemService(Activity.ALARM_SERVICE);
+                AlarmManager deleteManager = (AlarmManager) getSystemService(Activity.ALARM_SERVICE);
 
-            // Fires inexact alarm once a day
-            deleteManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
-                                              AlarmManager.INTERVAL_DAY, pendingDeleteIntent);
+                // Fires inexact alarm once a day
+                deleteManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
+                        AlarmManager.INTERVAL_DAY, pendingDeleteIntent);
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("firstRun", false);
+            editor.apply();
         }
     }
 
@@ -247,6 +255,7 @@ public class MainActivity extends Activity {
                 Toast.makeText(this, "Reconnection Successful", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_settings:
+                Toast.makeText(this, "Loading Application List", Toast.LENGTH_LONG).show();
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
