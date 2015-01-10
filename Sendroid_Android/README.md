@@ -2,6 +2,10 @@
 
 ### Changelist
 ---
+#### Version 1.1.5
+* Deleting file on download exceptions
+* Removing progressbar from notification when download fails
+
 #### Version 1.1.3
 * Populating default share list from system
 

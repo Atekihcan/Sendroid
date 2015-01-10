@@ -192,16 +192,15 @@ public class ImageDownloadService extends IntentService {
             }
 
             if (CANCEL_DOWNLOAD && imageOutputFile != null) {
-                try {
-                    imageOutputFile.delete();
-                } catch (Exception e) {
-                    Timber.d(e.getClass().getName() + " happened");
-                    e.printStackTrace();
-                }
+                imageOutputFile.delete();
             }
 
         } catch (Exception e) {
             Timber.d(e.getClass().getName() + " happened");
+            e.printStackTrace();
+            if (imageOutputFile != null) {
+                imageOutputFile.delete();
+            }
             notifyImageDownloadFailed(e.getClass().getSimpleName());
         }
     }
@@ -270,6 +269,7 @@ public class ImageDownloadService extends IntentService {
     private void notifyImageDownloadFailed(String error) {
         mBuilder.setContentTitle("Image Download Failed")
                 .setContentText("Error : " + error)
+                .setProgress(0, 0, false)
                 .setOngoing(false);
         mNotificationManager.notify(notificationID, mBuilder.build());
     }
